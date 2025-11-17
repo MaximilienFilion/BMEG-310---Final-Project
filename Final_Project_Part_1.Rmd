@@ -35,6 +35,7 @@ mutation_patient_ids <- unique(substr(data_mutations$Tumor_Sample_Barcode, 1, 12
 common_patients <- Reduce(intersect, list(rna_patient_ids, clinical_patient_ids, mutation_patient_ids))
 ```
 
+
 ```{r}
 colnames(data_clinical_patient)
 # Step 1: Inspect unique values to see exact formatting
@@ -54,4 +55,123 @@ data_clinical_patient$AJCC_PATHOLOGIC_TUMOR_STAGE <- sapply(stages, function(x) 
 ```
 
 
+### Data Cleaning
+```{r}
+# Converting Stage String into Numerical Value
+
+# Convert OS, DSS, PFS, DFS into binary Value, where 1 is survival and 0 is end-point
+
+```
+
+## Data Exploration 
+### Age of KIRC Patients
+```{r}
+# Age associated with patients
+common_patient_ages <- data_clinical_patient$AGE[match(common_patients, data_clinical_patient$PATIENT_ID)]
+
+# Load the ggplot2 library
+library(ggplot2)
+
+# Convert to a dataframe
+age_df <- data.frame(AGE = common_patient_ages)
+
+# Plot the boxplot
+ggplot(age_df, aes(x = AGE)) +
+geom_boxplot(fill = "skyblue", color = "black") +
+labs(
+title = "Distribution of Ages Among Patients",
+x = "Age (years)",
+y = ""
+) +
+theme_minimal(base_size = 14)
+```
+
+What did we notice?
+
+### Tumor Stage of KIRC Patients
+```{r}
+
+```
+
+What did we notice?
+
+### Sex, Ethnicity, Race, and Ancestry of KIRC Patients
+```{r}
+# Find the different Categories
+
+# Create a vector of frequency
+
+# Plot pie chart for every variable
+```
+
+What did we notice?
+
+### Survival Analysis of Overall Survival (OS)
+```{r}
+# Kaplan-Meier Curve
+```
+
+What did we notice?
+
+### Survival Analysis of Disease-Specific Survival (DSS)
+```{r}
+# Kaplan-Meier Curve
+```
+
+What did we notice?
+
+### Survival Analysis of Progression-Free Survival(PFS)
+```{r}
+# Kaplan-Meier Curve
+```
+
+What did we notice?
+
+### Survival Analysis of Disease-Free Survival (DFS)
+```{r}
+# Kaplan-Meier Curve
+```
+
+What did we notice?
+
+### Survival Analysis of Age
+```{r}
+# Kaplan-Meier Curve
+```
+
+What did we notice?
+
+### Survival Analysis of Cancer Stage
+```{r}
+# Kaplan-Meier Curve
+```
+
+What did we notice?
+
+### Survival Analysis of Sex
+```{r}
+# Kaplan-Meier Curve
+```
+
+
+## Mutation Data Analysis
+  1) Build a gene-patient matrix that contains mutation data. Within this matrix, "1" represents whether there is a mutation in a given gene and given patient and "0" represents no mutation. Note, when building this matrix, you can take into account the type of mutations (e.g., synonymous, non-synonymous, etc)  
+```{r}
+
+```
+
+  2) Pick the top 20 or most frequently mutated genes from this matrix.    
+```{r}
+
+```
+
+  3) Perform clustering on the resulting mutation matrix Perhaps try ward and ward.D2 linkage methods if you see narrow clusters.
+```{r}
+
+```
+  
+  4) Take the clusters of patients and (a) see if outcome data between patient clusters is different, (b) see if any other clinical data is different when you compare patient clusters - how much overlap do you see between the patient clusters?
+```{r}
+
+```
 
