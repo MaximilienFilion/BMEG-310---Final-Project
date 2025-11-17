@@ -35,8 +35,6 @@ mutation_patient_ids <- unique(substr(data_mutations$Tumor_Sample_Barcode, 1, 12
 common_patients <- Reduce(intersect, list(rna_patient_ids, clinical_patient_ids, mutation_patient_ids))
 ```
 
-### 
-
 ```{r}
 colnames(data_clinical_patient)
 # Step 1: Inspect unique values to see exact formatting
@@ -53,8 +51,7 @@ data_clinical_patient$AJCC_PATHOLOGIC_TUMOR_STAGE <- sapply(stages, function(x) 
     NA  
   }
 })
-
-
 ```
+
 
 
