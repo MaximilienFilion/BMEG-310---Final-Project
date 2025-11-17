@@ -36,3 +36,25 @@ common_patients <- Reduce(intersect, list(rna_patient_ids, clinical_patient_ids,
 ```
 
 ### 
+
+```{r}
+colnames(data_clinical_patient)
+# Step 1: Inspect unique values to see exact formatting
+unique(data_clinical_patient$AJCC_PATHOLOGIC_TUMOR_STAGE)
+
+# Step 2: Clean the column (remove spaces, lowercase, handle NAs)
+stages <- trimws(tolower(data_clinical_patient$AJCC_PATHOLOGIC_TUMOR_STAGE))
+
+# Convert Roman numerals to numbers 
+data_clinical_patient$AJCC_PATHOLOGIC_TUMOR_STAGE <- sapply(stages, function(x) {
+  if (grepl("stage", x)) {
+    as.numeric(as.roman(gsub("stage ", "", x)))
+  } else {
+    NA  
+  }
+})
+
+
+```
+
+
