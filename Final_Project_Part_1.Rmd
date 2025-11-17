@@ -10,13 +10,29 @@ output:
   html_document: default
 ---
 
-### Final Project Part 1
+# Final Project Part 1
 ## Clinical data Analysis
 
-# Download the data
+### Download the data
 ```{r}
 RNAseq_KIRC <- read.csv("RNAseq_KIRC.csv")
 data_clinical_patient <- read.delim("data_clinical_patient.txt", header = TRUE, sep = "\t", skip = 4)
 data_mutations <- read.delim("data_mutations.txt", header = TRUE, sep = "\t", stringsAsFactors = FALSE)
 ```
 
+### Run the intersect of all the patient sets - code reused from lab 7 submission
+```{r}
+# RNAseq_KIRC dataset
+rna_patient_ids <- gsub("\\.", "-", substr(colnames(RNAseq_KIRC), 1, 12))
+
+# Data_clinical_patient dataset
+clinical_patient_ids <- unique(data_clinical_patient$PATIENT_ID)
+
+# Data_mutation dataset
+mutation_patient_ids <- unique(substr(data_mutations$Tumor_Sample_Barcode, 1, 12))
+
+# Common patients
+common_patients <- Reduce(intersect, list(rna_patient_ids, clinical_patient_ids, mutation_patient_ids))
+```
+
+### 
