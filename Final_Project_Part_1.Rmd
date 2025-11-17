@@ -38,29 +38,77 @@ common_patients <- Reduce(intersect, list(rna_patient_ids, clinical_patient_ids,
 
 ### Data Cleaning
 ```{r}
+#colnames(data_clinical_patient)
+# Step 1: Inspect unique values to see exact formatting
+unique(data_clinical_patient$AJCC_PATHOLOGIC_TUMOR_STAGE)
+
+# Step 2: Clean the column (remove spaces, lowercase, handle NAs)
+stages <- trimws(tolower(data_clinical_patient$AJCC_PATHOLOGIC_TUMOR_STAGE))
+
+# Convert Roman numerals to numbers 
+data_clinical_patient$AJCC_PATHOLOGIC_TUMOR_STAGE <- sapply(stages, function(x) {
+  if (grepl("stage", x)) {
+    as.numeric(as.roman(gsub("stage ", "", x)))
+  } else {
+    NA  
+  }
+})
+
 #library(dplyr)
 #library(stringr)
-# Converting Stage String into Numerical Value
+
+# Convert OS into binary Value, where 1 is survival and 0 is end-point
 data_clinical_patient <- data_clinical_patient %>%
   mutate(
     #convert to uppercase and remove spaces
-    AJCC_clean = toupper(str_replace_all(AJCC_PATHOLOGIC_TUMOR_STAGE, " ", "")),
-    AJCC_PATHOLOGIC_TUMOR_STAGE = str_replace_all(AJCC_clean, c(
-       "STAGEIV" = "4", 
-       "STAGEIII" = "3",
-       "STAGEII" = "2",
-       "STAGEI" = "1")
+    OS_clean = toupper(str_replace_all(OS_STATUS, " ", "")),
+    OS_STATUS = str_replace_all(OS_clean, c(
+       "0:LIVING" = "1", 
+       "1:DECEASED" = "0")
        ),
     # Convert the resulting column to numeric
-    AJCC_PATHOLOGIC_TUMOR_STAGE = as.numeric(AJCC_PATHOLOGIC_TUMOR_STAGE)
+    OS_STATUS = as.numeric(OS_STATUS)
   )
+
+# Convert DSS into binary Value, where 1 is survival and 0 is end-point
+data_clinical_patient <- data_clinical_patient %>%
+  mutate(
+    #convert to uppercase and remove spaces
+    DSS_clean = toupper(str_replace_all(DSS_STATUS, " ", "")),
+    DSS_STATUS = str_replace_all(DSS_clean, c(
+       "0:ALIVEORDEADTUMORFREE" = "1", 
+       "1:DEADWITHTUMOR" = "0")
+       ),
+    # Convert the resulting column to numeric
+    DSS_STATUS = as.numeric(DSS_STATUS)
+  )
+
+# Convert DFS into binary Value, where 1 is survival and 0 is end-point
+data_clinical_patient <- data_clinical_patient %>%
+  mutate(
+    #convert to uppercase and remove spaces
+    DFS_clean = toupper(str_replace_all(DFS_STATUS, " ", "")),
+    DFS_STATUS = str_replace_all(DFS_clean, c(
+       "0:DISEASEFREE" = "1", 
+       "1:RECURRED/PROGRESSED" = "0")
+       ),
+    # Convert the resulting column to numeric
+    DFS_STATUS = as.numeric(DFS_STATUS)
+  )
+
+# Convert PFS into binary Value, where 1 is survival and 0 is end-point
+data_clinical_patient <- data_clinical_patient %>%
+  mutate(
+    #convert to uppercase and remove spaces
+    PFS_clean = toupper(str_replace_all(PFS_STATUS, " ", "")),
+    PFS_STATUS = str_replace_all(PFS_clean, c(
+       "0:CENSORED" = "1", 
+       "1:PROGRESSION" = "0")
+       ),
+    # Convert the resulting column to numeric
+    PFS_STATUS = as.numeric(PFS_STATUS)
+)
 head(data_clinical_patient)
-```
-
-
-```{r}
-# Convert OS, DSS, PFS, DFS into binary Value, where 1 is survival and 0 is end-point
-head(data_clinical_patient, 30)
 ```
 
 ## Data Exploration 
