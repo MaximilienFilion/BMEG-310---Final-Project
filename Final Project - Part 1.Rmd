@@ -1,9 +1,0 @@
----
-title: "Final Project Part 1"
-author: "Maximilien Filion"
-author: "
-date: "2025-11-17"
-output: html_document
----
-
-
