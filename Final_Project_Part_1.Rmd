@@ -115,30 +115,43 @@ head(data_clinical_patient)
 ### Age of KIRC Patients
 ```{r}
 # Age associated with patients
-common_patient_ages <- data_clinical_patient$AGE[match(common_patients, data_clinical_patient$PATIENT_ID)]
+# Check this - I got rid of matching step 
+#common_patient_ages <- data_clinical_patient$AGE[match(common_patients, data_clinical_patient$PATIENT_ID)]
 
 # Load the ggplot2 library
 library(ggplot2)
 
 # Convert to a dataframe
-age_df <- data.frame(AGE = common_patient_ages)
+age_df <- data.frame(AGE = data_clinical_patient$AGE)
 
 # Plot the boxplot
-ggplot(age_df, aes(x = AGE)) +
-geom_boxplot(fill = "skyblue", color = "black") +
-labs(
-title = "Distribution of Ages Among Patients",
-x = "Age (years)",
-y = ""
-) +
-theme_minimal(base_size = 14)
+ggplot(age_df, aes(y = AGE)) +
+  geom_boxplot(fill = "skyblue", color = "black") +
+  labs(
+    title = "Distribution of Ages Among Patients",
+    x = "",
+    y = "Age (years)"
+    ) +
+  theme_minimal(base_size = 14)
 ```
 
 What did we notice?
 
 ### Tumor Stage of KIRC Patients
 ```{r}
+# Tumor stage associated with patients
+# Convert to a dataframe
+stage_df <- data.frame(STAGE = data_clinical_patient$AJCC_PATHOLOGIC_TUMOR_STAGE)
 
+# Plot the bar graph
+ggplot(stage_df, aes(x = STAGE)) +
+  geom_bar(fill = "skyblue", color = "black") +
+  labs(
+    title = "Number of Patients by Tumor Stage",
+    x = "Tumor Stage",
+    y = "Count"
+  ) +
+  theme_minimal(base_size = 14)
 ```
 
 What did we notice?
