@@ -27,3 +27,6 @@ __Some analysis plans that do not make sense within the context of the project:_
 •    perform survival analysis on top 5 PCAs
 •    suggest sth not requested, like global alignment possibly with Needleman-Wunsch algorithm
 •    Perform PCA for each significant gene
+
+
+This looks complicated
