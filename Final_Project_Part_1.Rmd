@@ -60,8 +60,8 @@ data_clinical_patient$AJCC_PATHOLOGIC_TUMOR_STAGE <- sapply(stages, function(x) 
   }
 })
 
-#library(dplyr)
-#library(stringr)
+library(dplyr)
+library(stringr)
 
 # Convert OS into binary Value, where 1 is survival and 0 is end-point
 data_clinical_patient <- data_clinical_patient %>%
@@ -193,49 +193,165 @@ What did we notice?
 
 ### Survival Analysis of Overall Survival (OS)
 ```{r}
-# Kaplan-Meier Curve
+
+library(survival)
+library(survminer)
+# Create a survival object
+surv_os <- Surv(time = data_clinical_patient$OS_MONTHS, 
+                event = 1 - data_clinical_patient$OS_STATUS) 
+# Note: OS_STATUS: 1 = alive, 0 = deceased, so event = 1 - OS_STATUS
+
+# Fit Kaplan-Meier model
+fit_os <- survfit(surv_os ~ 1)
+
+# Plot
+ggsurvplot(fit_os,
+           data = data_clinical_patient,
+           risk.table = TRUE,
+           conf.int = TRUE,
+           palette = "Dark2",
+           title = "Kaplan-Meier Curve: Overall Survival (OS)",
+           xlab = "Time (Months)",
+           ylab = "Survival Probability",
+           ggtheme = theme_minimal(base_size = 14))
 ```
 
 What did we notice?
 
 ### Survival Analysis of Disease-Specific Survival (DSS)
 ```{r}
-# Kaplan-Meier Curve
+surv_dss <- Surv(time = data_clinical_patient$DSS_MONTHS, 
+                 event = 1 - data_clinical_patient$DSS_STATUS)
+
+fit_dss <- survfit(surv_dss ~ 1)
+
+ggsurvplot(fit_dss,
+           data = data_clinical_patient,
+           risk.table = TRUE,
+           conf.int = TRUE,
+           palette = "Dark2",
+           title = "Kaplan-Meier Curve: Disease-Specific Survival (DSS)",
+           xlab = "Time (Months)",
+           ylab = "Survival Probability",
+           ggtheme = theme_minimal(base_size = 14))
 ```
 
 What did we notice?
 
 ### Survival Analysis of Progression-Free Survival(PFS)
 ```{r}
-# Kaplan-Meier Curve
+surv_pfs <- Surv(time = data_clinical_patient$PFS_MONTHS, 
+                 event = 1 - data_clinical_patient$PFS_STATUS)
+
+fit_pfs <- survfit(surv_pfs ~ 1)
+
+ggsurvplot(fit_pfs,
+           data = data_clinical_patient,
+           risk.table = TRUE,
+           conf.int = TRUE,
+           palette = "Dark2",
+           title = "Kaplan-Meier Curve: Progression-Free Survival (PFS)",
+           xlab = "Time (Months)",
+           ylab = "Survival Probability",
+           ggtheme = theme_minimal(base_size = 14))
 ```
 
 What did we notice?
 
 ### Survival Analysis of Disease-Free Survival (DFS)
 ```{r}
-# Kaplan-Meier Curve
+surv_dfs <- Surv(time = data_clinical_patient$DFS_MONTHS, 
+                 event = 1 - data_clinical_patient$DFS_STATUS)
+
+fit_dfs <- survfit(surv_dfs ~ 1)
+
+ggsurvplot(fit_dfs,
+           data = data_clinical_patient,
+           risk.table = TRUE,
+           conf.int = TRUE,
+           palette = "Dark2",
+           title = "Kaplan-Meier Curve: Disease-Free Survival (DFS)",
+           xlab = "Time (Months)",
+           ylab = "Survival Probability",
+           ggtheme = theme_minimal(base_size = 14))
 ```
 
 What did we notice?
 
 ### Survival Analysis of Age
 ```{r}
-# Kaplan-Meier Curve
+# Create age groups (above vs below median)
+median_age <- median(data_clinical_patient$AGE, na.rm = TRUE)
+data_clinical_patient$AGE_GROUP <- ifelse(data_clinical_patient$AGE <= median_age, 
+                                          paste0("<= ", median_age), 
+                                          paste0("> ", median_age))
+
+# Survival object for OS
+surv_os <- Surv(time = data_clinical_patient$OS_MONTHS, 
+                event = 1 - data_clinical_patient$OS_STATUS)
+
+# Fit Kaplan-Meier by age group
+fit_age <- survfit(surv_os ~ AGE_GROUP, data = data_clinical_patient)
+
+# Plot
+ggsurvplot(fit_age,
+           data = data_clinical_patient,
+           pval = TRUE,   # shows log-rank p-value
+           conf.int = TRUE,
+           palette = c("skyblue", "blue"),
+           title = "Overall Survival by Age Group",
+           xlab = "Time (Months)",
+           ylab = "Survival Probability",
+           ggtheme = theme_minimal(base_size = 14))
 ```
 
 What did we notice?
 
 ### Survival Analysis of Cancer Stage
 ```{r}
-# Kaplan-Meier Curve
+# Make sure stage is factor
+data_clinical_patient$STAGE_FACTOR <- factor(data_clinical_patient$AJCC_PATHOLOGIC_TUMOR_STAGE)
+
+# Survival object for OS
+surv_os <- Surv(time = data_clinical_patient$OS_MONTHS, 
+                event = 1 - data_clinical_patient$OS_STATUS)
+
+# Fit Kaplan-Meier by tumor stage
+fit_stage <- survfit(surv_os ~ STAGE_FACTOR, data = data_clinical_patient) # All my values show N/A for AJCC_PATHOLOGIC, therefore nothing will work here. 
+
+# Plot
+
+#Need to finish when I see the actual changes
 ```
 
 What did we notice?
 
 ### Survival Analysis of Sex
 ```{r}
-# Kaplan-Meier Curve
+# Make sure sex is factor
+data_clinical_patient$SEX <- factor(ifelse(is.na(data_clinical_patient$SEX) | 
+                                           data_clinical_patient$SEX == "", 
+                                           "Unknown", 
+                                           data_clinical_patient$SEX))
+
+# Survival object for OS
+surv_os <- Surv(time = data_clinical_patient$OS_MONTHS, 
+                event = 1 - data_clinical_patient$OS_STATUS)
+
+# Fit Kaplan-Meier by sex
+fit_sex <- survfit(surv_os ~ SEX, data = data_clinical_patient)
+
+# Plot
+ggsurvplot(fit_sex,
+           data = data_clinical_patient,
+           
+           pval = TRUE,
+           conf.int = TRUE,
+           palette = c("skyblue", "salmon", "grey"),
+           title = "Overall Survival by Sex",
+           xlab = "Time (Months)",
+           ylab = "Survival Probability",
+           ggtheme = theme_minimal(base_size = 14))
 ```
 
 
