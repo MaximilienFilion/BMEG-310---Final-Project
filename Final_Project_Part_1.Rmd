@@ -323,6 +323,7 @@ surv_os <- Surv(time = data_clinical_patient$OS_MONTHS,
 # Fit Kaplan-Meier by age group
 fit_age <- survfit(surv_os ~ AGE_GROUP, data = data_clinical_patient)
 
+
 # Plot
 ggsurvplot(fit_age,
            data = data_clinical_patient,
@@ -350,8 +351,16 @@ surv_os <- Surv(time = data_clinical_patient$OS_MONTHS,
 fit_stage <- survfit(surv_os ~ STAGE_FACTOR, data = data_clinical_patient) # All my values show N/A for AJCC_PATHOLOGIC, therefore nothing will work here. 
 
 # Plot
+ggsurvplot(fit_stage,
+           data = data_clinical_patient,
+           pval = TRUE,
+           conf.int = TRUE,
+           palette = "Set1",
+           title = "Overall Survival by Tumor Stage",
+           xlab = "Time (Months)",
+           ylab = "Survival Probability",
+           ggtheme = theme_minimal(base_size = 14))
 
-#Need to finish when I see the actual changes
 ```
 
 What did we notice?
@@ -374,7 +383,6 @@ fit_sex <- survfit(surv_os ~ SEX, data = data_clinical_patient)
 # Plot
 ggsurvplot(fit_sex,
            data = data_clinical_patient,
-           
            pval = TRUE,
            conf.int = TRUE,
            palette = c("skyblue", "salmon", "grey"),
