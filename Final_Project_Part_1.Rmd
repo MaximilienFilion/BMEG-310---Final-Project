@@ -114,7 +114,7 @@ data_clinical_patient <- data_clinical_patient %>%
     # Convert the resulting column to numeric
     PFS_STATUS = as.numeric(PFS_STATUS)
 )
-head(data_clinical_patient)
+head(data_clinical_patient, 100)
 ```
 
 ## Data Exploration 
@@ -168,25 +168,55 @@ What did we notice?
 #head(data_clinical_patient, 30)
 #unique(data_clinical_patient$GENETIC_ANCESTRY_LABEL)
 
-# Define the columns 
-cols <- c("SEX", "RACE", "ETHNICITY", "GENETIC_ANCESTRY_LABEL")
+library(ggplot2)
 
-# Plot pie chart for every variable
-for (col in cols) {
-  # Create frequency table, converting blanks to Unknown
-  freq <- table(ifelse(data_clinical_patient[[col]] == "" | 
-                       is.na(data_clinical_patient[[col]]), 
-                       "Unknown", 
-                       data_clinical_patient[[col]]))
+plot_donut <- function(data, column_name, title) {
+  # Convert to character
+  col <- as.character(data[[column_name]])
+  # Replace blank or whitespace-only values with "Unknown" to label its column 
+  col[trimws(col) == ""] <- "Unknown"
   
-  # Plot Pie Chart
-  pie(
-    freq,
-    main = paste("Distribution of", col),
-    labels = paste(names(freq), "\n", round(freq / sum(freq) * 100, 1), "%")
-  )
+  # If this is the ancestry column, apply the cleaner label mapping
+  if (column_name == "GENETIC_ANCESTRY_LABEL") {
+    ancestry_labels <- c(
+      "AFR"        = "African",
+      "AFR_ADMIX"  = "African (Admixed)",
+      "AMR"        = "Americas / Latino",
+      "EAS"        = "East Asian",
+      "EAS_ADMIX"  = "East Asian (Admixed)",
+      "EUR"        = "European",
+      "EUR_ADMIX"  = "European (Admixed)",
+      "SAS_ADMIX"  = "South Asian (Admixed)",
+      "Unknown"    = "Unknown"
+    )
+    # Map values - unmapped values become NA, so protect against that
+    col <- ifelse(col %in% names(ancestry_labels),
+                  ancestry_labels[col],
+                  col)
+  }
+
+  # Build frequency table
+  freq <- table(col)
+  df <- as.data.frame(freq)
+  colnames(df) <- c("Category", "Count")
+  df$Fraction <- df$Count / sum(df$Count)
+  
+  # Build legend labels with percentages
+  legend_labels <- paste0(df$Category, " (", round(df$Fraction * 100, 1), "%)")
+  names(legend_labels) <- df$Category
+  
+  ggplot(df, aes(x = "", y = Fraction, fill = Category)) +
+    geom_col(width = 1) +
+    coord_polar("y") +
+    scale_fill_discrete(labels = legend_labels) +
+    labs(title = title, fill = column_name) +
+    theme_void()
 }
 
+plot_donut(data_clinical_patient, "SEX", "Sex Distribution")
+plot_donut(data_clinical_patient, "ETHNICITY", "Ethnicity Distribution")
+plot_donut(data_clinical_patient, "RACE", "Race Distribution")
+plot_donut(data_clinical_patient, "GENETIC_ANCESTRY_LABEL", "Ancestry Distribution")
 ```
 
 What did we notice?
