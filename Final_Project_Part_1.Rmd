@@ -414,3 +414,565 @@ ggsurvplot(fit_sex,
 
 ```
 
+
+## Analyses
+
+==============================================================================
+# SECTION 3: MUTATION DATA ANALYSIS
+# ==============================================================================
+
+# ==============================================================================
+# INVESTIGATION 1: Top 20 Most Mutated Genes
+# ==============================================================================
+
+## 3.1 Build Gene-Patient Mutation Matrix
+# Create binary matrix: rows = patients, columns = genes
+```{r inv1_matrix}
+# Filter mutations to only common patients
+# [INSERT CODE HERE]
+
+# Create gene-patient matrix
+# Hint: Use table() or reshape to create binary/count matrix
+# [INSERT CODE HERE]
+
+# Preview matrix dimensions and structure
+# [INSERT CODE HERE]
+```
+
+## 3.2 Calculate Mutation Frequencies
+# Sum mutations across all patients for each gene
+```{r inv1_frequency}
+# Calculate total mutations per gene
+# [INSERT CODE HERE]
+
+# Sort genes by mutation frequency (descending)
+# [INSERT CODE HERE]
+
+# Extract top 20 genes
+# [INSERT CODE HERE]
+
+# Display top 20 genes and their frequencies
+# [INSERT CODE HERE]
+```
+
+## 3.3 Visualize Top 20 Mutated Genes
+# Create bar plot or lollipop chart
+```{r inv1_visualize}
+# Create visualization of top 20 genes
+# Options: bar plot, lollipop chart, or horizontal bar chart
+# [INSERT CODE HERE]
+```
+
+**Observations:**
+# [COMMENT HERE: Which genes are most frequently mutated? Any expected oncogenes?]
+
+
+# ==============================================================================
+# INVESTIGATION 2: Hierarchical Clustering of Mutated Genes
+# ==============================================================================
+
+## 3.4 Prepare Data for Hierarchical Clustering
+# Use gene-patient matrix with top genes or all genes
+```{r inv2_prep}
+# Decide on genes to include (top N or all with sufficient mutations)
+# [INSERT CODE HERE]
+
+# Prepare matrix for clustering (may need to transpose)
+# [INSERT CODE HERE]
+
+# Handle missing values if any
+# [INSERT CODE HERE]
+```
+
+## 3.5 Apply Ward Hierarchical Clustering
+# Perform hierarchical clustering with Ward linkage
+```{r inv2_ward}
+# Calculate distance matrix
+# Suggested distance: Euclidean or Binary (Jaccard/Hamming)
+# [INSERT CODE HERE]
+
+# Apply Ward linkage clustering
+# [INSERT CODE HERE]
+
+# Generate dendrogram
+# [INSERT CODE HERE]
+
+# Determine optimal number of clusters
+# Methods: dendrogram inspection, silhouette analysis, elbow method
+# [INSERT CODE HERE]
+
+# Cut dendrogram to create cluster assignments
+# [INSERT CODE HERE]
+
+# Display cluster sizes
+# [INSERT CODE HERE]
+```
+
+## 3.6 Apply Ward.D2 Hierarchical Clustering
+# Repeat with Ward.D2 linkage method
+```{r inv2_ward_d2}
+# Apply Ward.D2 linkage clustering
+# [INSERT CODE HERE]
+
+# Generate dendrogram
+# [INSERT CODE HERE]
+
+# Cut dendrogram for cluster assignments
+# [INSERT CODE HERE]
+
+# Compare cluster sizes with Ward method
+# [INSERT CODE HERE]
+```
+
+## 3.7 Compare Clustering Methods
+# Evaluate agreement between Ward and Ward.D2
+```{r inv2_compare}
+# Create comparison table or confusion matrix
+# [INSERT CODE HERE]
+
+# Calculate agreement metrics (e.g., Adjusted Rand Index)
+# [INSERT CODE HERE]
+```
+
+**Observations:**
+# [COMMENT HERE: Do both methods identify similar clusters? Which seems better?]
+
+
+# ==============================================================================
+# INVESTIGATION 3: Patient Outcomes Across Hierarchical Clusters
+# ==============================================================================
+
+## 3.8 Assign Patients to Clusters
+# Link cluster assignments to patient clinical data
+```{r inv3_assign}
+# Add cluster assignment to clinical data
+# Use clusters from best hierarchical method (Ward or Ward.D2)
+# [INSERT CODE HERE]
+
+# Display cluster distribution
+# [INSERT CODE HERE]
+```
+
+## 3.9 Kaplan-Meier Curves by Cluster
+# Compare survival outcomes across clusters
+```{r inv3_survival}
+# --- Overall Survival (OS) ---
+# [INSERT CODE HERE]
+
+# --- Disease-Specific Survival (DSS) ---
+# [INSERT CODE HERE]
+
+# --- Progression-Free Survival (PFS) ---
+# [INSERT CODE HERE]
+
+# --- Disease-Free Survival (DFS) ---
+# [INSERT CODE HERE]
+
+# Perform log-rank tests for each outcome
+# [INSERT CODE HERE]
+```
+
+**Observations:**
+# [COMMENT HERE: Do clusters show different survival patterns?]
+
+## 3.10 ANOVA for Continuous Variables
+# Test if age differs significantly across clusters
+```{r inv3_anova}
+# One-way ANOVA for age
+# [INSERT CODE HERE]
+
+# If significant, perform Tukey HSD post-hoc test
+# [INSERT CODE HERE]
+
+# Visualize age distribution by cluster (boxplot)
+# [INSERT CODE HERE]
+```
+
+**Observations:**
+# [COMMENT HERE: Do clusters have different age distributions?]
+
+## 3.11 Chi-Square Tests for Categorical Variables
+# Test if categorical variables differ across clusters
+```{r inv3_chisq}
+# --- Tumor Stage ---
+# [INSERT CODE HERE]
+
+# --- Sex ---
+# [INSERT CODE HERE]
+
+# --- Ethnicity ---
+# [INSERT CODE HERE]
+
+# Create contingency tables and visualizations
+# [INSERT CODE HERE]
+```
+
+**Observations:**
+# [COMMENT HERE: Which clinical variables differ by cluster?]
+
+
+# ==============================================================================
+# INVESTIGATION 4: Density-Based Clustering (HDBSCAN)
+# ==============================================================================
+
+## 3.12 Prepare Data for HDBSCAN
+# Use same gene-patient matrix as hierarchical clustering
+```{r inv4_prep}
+library(dbscan)
+
+# Prepare matrix (same as Investigation 2)
+# [INSERT CODE HERE]
+
+# Optional: Perform dimensionality reduction for visualization
+# Methods: PCA, t-SNE, UMAP
+# [INSERT CODE HERE]
+```
+
+## 3.13 Apply HDBSCAN Clustering
+# Perform density-based clustering
+```{r inv4_hdbscan}
+# Apply HDBSCAN with parameter tuning
+# Key parameters: minPts (min_cluster_size), min_samples
+# [INSERT CODE HERE]
+
+# Extract cluster assignments (note: -1 or 0 may indicate noise/outliers)
+# [INSERT CODE HERE]
+
+# Display cluster sizes (including noise)
+# [INSERT CODE HERE]
+```
+
+## 3.14 Visualize HDBSCAN Clusters
+# Plot clusters in reduced dimensional space
+```{r inv4_visualize}
+# If dimensionality reduction was performed, create scatter plot
+# Color points by cluster assignment
+# [INSERT CODE HERE]
+
+# Highlight noise/outlier points
+# [INSERT CODE HERE]
+```
+
+**Observations:**
+# [COMMENT HERE: How many clusters detected? Are they well-separated?]
+
+
+# ==============================================================================
+# INVESTIGATION 5: Patient Outcomes Across HDBSCAN Clusters
+# ==============================================================================
+
+## 3.15 Assign Patients to HDBSCAN Clusters
+# Link HDBSCAN cluster assignments to clinical data
+```{r inv5_assign}
+# Add HDBSCAN cluster to clinical data
+# [INSERT CODE HERE]
+
+# Decide how to handle noise/outlier group
+# Options: exclude, analyze separately, group with closest cluster
+# [INSERT CODE HERE]
+
+# Display cluster distribution
+# [INSERT CODE HERE]
+```
+
+## 3.16 Kaplan-Meier Curves by HDBSCAN Cluster
+# Compare survival outcomes across density-based clusters
+```{r inv5_survival}
+# --- Overall Survival (OS) ---
+# [INSERT CODE HERE]
+
+# --- Disease-Specific Survival (DSS) ---
+# [INSERT CODE HERE]
+
+# --- Progression-Free Survival (PFS) ---
+# [INSERT CODE HERE]
+
+# --- Disease-Free Survival (DFS) ---
+# [INSERT CODE HERE]
+
+# Perform log-rank tests
+# [INSERT CODE HERE]
+```
+
+**Observations:**
+# [COMMENT HERE: Do HDBSCAN clusters differ in survival?]
+
+## 3.17 ANOVA for Continuous Variables (HDBSCAN)
+# Test age differences across HDBSCAN clusters
+```{r inv5_anova}
+# One-way ANOVA for age
+# [INSERT CODE HERE]
+
+# Post-hoc tests if significant
+# [INSERT CODE HERE]
+
+# Visualization
+# [INSERT CODE HERE]
+```
+
+## 3.18 Chi-Square Tests for Categorical Variables (HDBSCAN)
+# Test categorical variable differences
+```{r inv5_chisq}
+# Tumor stage, sex, ethnicity, etc.
+# [INSERT CODE HERE]
+
+# Contingency tables and visualizations
+# [INSERT CODE HERE]
+```
+
+## 3.19 Compare Hierarchical vs HDBSCAN Results
+# Evaluate which clustering method better separates patient subgroups
+```{r inv5_compare}
+# Compare statistical significance of survival differences
+# [INSERT CODE HERE]
+
+# Compare clinical variable associations
+# [INSERT CODE HERE]
+
+# Discuss which method identifies more meaningful subgroups
+# [INSERT CODE HERE]
+```
+
+**Observations:**
+# [COMMENT HERE: Which clustering approach is more informative?]
+
+
+# ==============================================================================
+# INVESTIGATION 6: Co-Mutation and Mutual Exclusivity Analysis
+# ==============================================================================
+
+## 3.20 Create Fisher's Exact Test Function
+# Function to test co-occurrence or mutual exclusivity between gene pairs
+```{r inv6_function}
+# Function: fisher_test_genes(gene1, gene2, mutation_matrix)
+# Inputs: Two gene names and mutation matrix
+# Outputs: Odds ratio, p-value, relationship type
+# [INSERT CODE HERE]
+```
+
+## 3.21 Test All Pairwise Combinations of Top 20 Genes
+# Run Fisher's exact test for all gene pairs
+```{r inv6_pairwise}
+# Get top 20 genes from Investigation 1
+# [INSERT CODE HERE]
+
+# Generate all pairwise combinations (190 pairs)
+# [INSERT CODE HERE]
+
+# Apply Fisher's exact test to each pair
+# Store results in dataframe: gene1, gene2, odds_ratio, p_value
+# [INSERT CODE HERE]
+```
+
+## 3.22 Multiple Testing Correction
+# Adjust p-values for multiple comparisons
+```{r inv6_correction}
+# Apply Bonferroni correction
+# [INSERT CODE HERE]
+
+# OR apply Benjamini-Hochberg FDR correction
+# [INSERT CODE HERE]
+
+# Filter for significant pairs (adjusted p-value < 0.05)
+# [INSERT CODE HERE]
+```
+
+## 3.23 Identify Co-Mutation and Mutual Exclusivity
+# Classify significant gene pairs
+```{r inv6_classify}
+# Co-mutation: Odds ratio > 1 and significant p-value
+# [INSERT CODE HERE]
+
+# Mutual exclusivity: Odds ratio < 1 and significant p-value
+# [INSERT CODE HERE]
+
+# Sort and display top co-mutating pairs
+# [INSERT CODE HERE]
+
+# Sort and display top mutually exclusive pairs
+# [INSERT CODE HERE]
+```
+
+## 3.24 Visualize Gene-Gene Relationships
+# Create heatmap and network diagram
+```{r inv6_visualize}
+# Create heatmap of odds ratios for top 20 genes
+# [INSERT CODE HERE]
+
+# Create network diagram showing significant relationships
+# Nodes = genes, Edges = significant co-mutation/exclusivity
+# Color edges by relationship type
+# [INSERT CODE HERE]
+
+# Create co-occurrence matrix
+# [INSERT CODE HERE]
+```
+
+**Observations:**
+# [COMMENT HERE: Which gene pairs co-mutate? Any mutual exclusivity patterns?]
+
+
+# ==============================================================================
+# INVESTIGATION 7: Disease-Specific Survival and Top 20 Genes
+# ==============================================================================
+
+## 3.25 Survival Analysis for Each Top Gene
+# Test association between each gene mutation and DSS
+```{r inv7_individual}
+# For each of the top 20 genes:
+# 1. Divide patients into mutated vs non-mutated groups
+# 2. Create Kaplan-Meier curves for DSS
+# 3. Perform log-rank test
+# 4. Calculate hazard ratio using Cox proportional hazards model
+# [INSERT CODE HERE]
+
+# Store results in dataframe: gene, hazard_ratio, CI_lower, CI_upper, p_value
+# [INSERT CODE HERE]
+```
+
+## 3.26 Multiple Testing Correction
+# Adjust p-values for 20 comparisons
+```{r inv7_correction}
+# Apply Bonferroni or FDR correction
+# [INSERT CODE HERE]
+
+# Identify genes significantly associated with DSS
+# [INSERT CODE HERE]
+```
+
+## 3.27 Visualize Results
+# Create forest plot and summary table
+```{r inv7_visualize}
+# Create forest plot of hazard ratios with confidence intervals
+# [INSERT CODE HERE]
+
+# Create summary table with all results
+# Columns: Gene, Mutation Frequency, HR, CI, p-value, adjusted p-value
+# [INSERT CODE HERE]
+
+# Visualize top genes with significant DSS association
+# [INSERT CODE HERE]
+```
+
+**Observations:**
+# [COMMENT HERE: Which genes are most strongly associated with DSS? Protective or harmful?]
+
+
+## 3.28 ALTERNATIVE ANALYSIS: Synonymous vs Non-Synonymous Mutations
+# Compare survival outcomes by mutation type
+```{r inv7_mutation_type}
+# Filter mutations by type
+# Variant_Classification column contains mutation type information
+# [INSERT CODE HERE]
+
+# Classify mutations as synonymous or non-synonymous
+# Non-synonymous: Missense, Nonsense, Frame_Shift, Splice_Site, etc.
+# Synonymous: Silent mutations
+# [INSERT CODE HERE]
+
+# For each top gene, compare DSS between:
+# 1. Patients with non-synonymous mutations
+# 2. Patients with synonymous mutations
+# 3. Patients with no mutations (reference)
+# [INSERT CODE HERE]
+
+# Kaplan-Meier curves stratified by mutation type
+# [INSERT CODE HERE]
+
+# Statistical tests (log-rank, Cox regression)
+# [INSERT CODE HERE]
+```
+
+**Observations:**
+# [COMMENT HERE: Do non-synonymous mutations have worse outcomes than synonymous?]
+
+
+# ==============================================================================
+# SECTION 4: COMPREHENSIVE RESULTS SUMMARY
+# ==============================================================================
+
+## 4.1 Summary of Key Findings
+```{r summary}
+# Create comprehensive summary tables and figures
+
+# --- DEMOGRAPHICS AND CLINICAL CHARACTERISTICS ---
+# [INSERT CODE HERE]
+
+# --- SURVIVAL OUTCOMES ---
+# Median survival times for OS, DSS, PFS, DFS
+# [INSERT CODE HERE]
+
+# --- MUTATION ANALYSIS ---
+# Top mutated genes and their frequencies
+# [INSERT CODE HERE]
+
+# --- CLUSTERING RESULTS ---
+# Number of clusters, sizes, clinical associations
+# [INSERT CODE HERE]
+
+# --- GENE-GENE INTERACTIONS ---
+# Significant co-mutations and mutual exclusivity
+# [INSERT CODE HERE]
+
+# --- PROGNOSTIC GENES ---
+# Genes significantly associated with DSS
+# [INSERT CODE HERE]
+```
+
+
+# ==============================================================================
+# SECTION 5: DISCUSSION AND CONCLUSIONS
+# ==============================================================================
+
+## 5.1 Key Findings Summary
+
+**Demographics:**
+# [WRITE HERE: Summary of patient characteristics]
+
+**Survival Patterns:**
+# [WRITE HERE: Key survival trends, median times, prognostic factors]
+
+**Mutation Landscape:**
+# [WRITE HERE: Most frequently mutated genes, their biological significance]
+
+**Patient Subgroups:**
+# [WRITE HERE: Clusters identified, clinical differences, prognostic value]
+
+**Gene Interactions:**
+# [WRITE HERE: Co-mutations and mutual exclusivity patterns]
+
+**Prognostic Biomarkers:**
+# [WRITE HERE: Genes associated with survival, potential therapeutic targets]
+
+
+## 5.2 Biological Interpretation
+
+# [WRITE HERE: Discuss biological meaning of findings]
+# - Are the top mutated genes known cancer drivers?
+# - Do clusters represent known molecular subtypes?
+# - What do co-mutation patterns suggest about tumor evolution?
+# - Clinical implications for treatment stratification
+
+
+## 5.3 Limitations
+
+# [WRITE HERE: Study limitations]
+# - Sample size considerations
+# - Missing data
+# - Potential confounders not adjusted for
+# - Limitations of clustering methods used
+
+
+## 5.4 Future Directions
+
+# [WRITE HERE: Suggested next steps]
+# - Validation in independent cohorts
+# - Functional studies of candidate genes
+# - Integration with other -omics data
+# - Clinical trial design based on subgroups
+
+
+# ==============================================================================
+# END OF ANALYSIS
+# ==============================================================================
+
