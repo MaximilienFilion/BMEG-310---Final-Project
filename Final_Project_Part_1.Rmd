@@ -38,6 +38,12 @@ common_patients <- Reduce(intersect, list(rna_patient_ids, clinical_patient_ids,
 
 ### Data Cleaning
 ```{r}
+# Tumour Stage: AJCC_PATHOLOGIC_TUMOR_STAGE
+# OS: Overall Survival - Time from the start of the study/treatment to death from any cause.
+# DSS: Disease-Specific Survival - Time from the start of the study/treatment to death specifically due to the cancer.
+# DFS: Disease-Free Survival - Time from the date of cure until the first sign of disease recurrence or death from any cause.
+# PFS: Progression-Free Survival - Time from the start of treatment until the first sign of disease growth/spread (progression) or death from any cause.
+
 #colnames(data_clinical_patient)
 # Step 1: Inspect unique values to see exact formatting
 unique(data_clinical_patient$AJCC_PATHOLOGIC_TUMOR_STAGE)
@@ -159,10 +165,28 @@ What did we notice?
 ### Sex, Ethnicity, Race, and Ancestry of KIRC Patients
 ```{r}
 # Find the different Categories
+#head(data_clinical_patient, 30)
+#unique(data_clinical_patient$GENETIC_ANCESTRY_LABEL)
 
-# Create a vector of frequency
+# Define the columns 
+cols <- c("SEX", "RACE", "ETHNICITY", "GENETIC_ANCESTRY_LABEL")
 
 # Plot pie chart for every variable
+for (col in cols) {
+  # Create frequency table, converting blanks to Unknown
+  freq <- table(ifelse(data_clinical_patient[[col]] == "" | 
+                       is.na(data_clinical_patient[[col]]), 
+                       "Unknown", 
+                       data_clinical_patient[[col]]))
+  
+  # Plot Pie Chart
+  pie(
+    freq,
+    main = paste("Distribution of", col),
+    labels = paste(names(freq), "\n", round(freq / sum(freq) * 100, 1), "%")
+  )
+}
+
 ```
 
 What did we notice?
