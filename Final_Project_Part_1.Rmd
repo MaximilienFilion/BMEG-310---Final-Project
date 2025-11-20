@@ -491,35 +491,35 @@ ggplot(top_20_genes, aes(x = reorder(Hugo_Symbol, -Frequency), y = Frequency)) +
 # [COMMENT HERE: Which genes are most frequently mutated? Any expected oncogenes?]
 
 # ==============================================================================
-# INVESTIGATION 2: Density-Based Clustering (HDBSCAN)
+# INVESTIGATION 2: HIERARCHICAL Density-Based Clustering (HDBSCAN)
 # ==============================================================================
 
 ## 3.2.1 Prepare Data for HDBSCAN
 # Use same gene-patient matrix as hierarchical clustering
 ```{r inv4_prep}
+# Download DBSCAN library
+# install.packages("dbscan")
+
 # Load the library
 library(dbscan)
 
-# Prepare matrix for clustering
-gene_patient_matrix <- t(gene_patient_matrix)
+# Prepare matrix for clustering - Only the top 20 mutated genes
+important_genes <- top_20_genes$Hugo_Symbol
+gene_patient_matrix_reduced <- gene_patient_matrix[
+  rownames(gene_patient_matrix) %in% important_genes,,drop = FALSE]
+gene_patient_matrix_reduced <- t(gene_patient_matrix_reduced)
 
-# Optional: Perform dimensionality reduction for visualization
-# Methods: PCA, t-SNE, UMAP
-# [INSERT CODE HERE]
 ```
 
 ## 3.2.2 Apply HDBSCAN Clustering
 # Perform density-based clustering
 ```{r inv4_hdbscan}
-# Apply HDBSCAN with parameter tuning
-# Key parameters: minPts (min_cluster_size), min_samples
-# [INSERT CODE HERE]
+# Determine the minimum size of a cluster 
+min_size <- c(5, 10, 20, 30, 40, 50)
 
-# Extract cluster assignments (note: -1 or 0 may indicate noise/outliers)
-# [INSERT CODE HERE]
-
-# Display cluster sizes (including noise)
-# [INSERT CODE HERE]
+hdbscan_results <- hdbscan(gene_patient_matrix_reduced, minPts = 30)
+hdbscan_results
+plot(hdbscan_results)
 ```
 
 ## 3.2.3 Visualize HDBSCAN Clusters
