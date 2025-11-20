@@ -392,28 +392,6 @@ ggsurvplot(fit_sex,
            ggtheme = theme_minimal(base_size = 14))
 ```
 
-## Mutation Data Analysis
-  1) Build a gene-patient matrix that contains mutation data. Within this matrix, "1" represents whether there is a mutation in a given gene and given patient and "0" represents no mutation. Note, when building this matrix, you can take into account the type of mutations (e.g., synonymous, non-synonymous, etc)  
-```{r}
-
-```
-
-  2) Pick the top 20 or most frequently mutated genes from this matrix.    
-```{r}
-
-```
-
-  3) Perform clustering on the resulting mutation matrix Perhaps try ward and ward.D2 linkage methods if you see narrow clusters.
-```{r}
-
-```
-  
-  4) Take the clusters of patients and (a) see if outcome data between patient clusters is different, (b) see if any other clinical data is different when you compare patient clusters - how much overlap do you see between the patient clusters?
-```{r}
-
-```
-
-
 ## Analyses
 
 ==============================================================================
@@ -424,18 +402,46 @@ ggsurvplot(fit_sex,
 # INVESTIGATION 1: Top 20 Most Mutated Genes
 # ==============================================================================
 
-## 3.1 Build Gene-Patient Mutation Matrix
-# Create binary matrix: rows = patients, columns = genes
+## 3.1 Build Gene-Patient Mutation Matrix (Data Frame)
+# Create binary matrix: rows = genes, columns = patients
+We decided to keep only the damaging mutations and exclude the potentially damageable or non-damageable mutations.
 ```{r inv1_matrix}
-# Filter mutations to only common patients
-# [INSERT CODE HERE]
+# Damaging and Potentially Pathogenic Mutations
+damaging_classes <- c(
+  "Nonsense_Mutation", "Frame_Shift_Del", "Frame_Shift_Ins",
+  "Splice_Site", "Nonstop_Mutation", "Translation_Start_Site",
+  "In_Frame_Del", "In_Frame_Ins", "Missense_Mutation"
+)
+
+# Filter Synonymous/Silent mutations and ensure that only common patients are kept
+damaging_mutations <- data_mutations[
+  data_mutations$Variant_Classification %in% damaging_classes, ]
+
+non_synonymous_dataset <- damaging_mutations[
+  substr(damaging_mutations$Tumor_Sample_Barcode, 1, 12) %in% common_patients, ]
+
+# Make a gene list
+genes <- unique(non_synonymous_dataset$Hugo_Symbol)
 
 # Create gene-patient matrix
-# Hint: Use table() or reshape to create binary/count matrix
-# [INSERT CODE HERE]
+gene_patient_matrix <- matrix(
+  0, 
+  nrow = length(genes), 
+  ncol = length(common_patients),
+  dimnames = list(genes, common_patients)
+)
 
-# Preview matrix dimensions and structure
-# [INSERT CODE HERE]
+# Populate the Matrix
+for (i in 1:nrow(non_synonymous_dataset)) {
+  
+  gene_name <- non_synonymous_dataset$Hugo_Symbol[i]
+  patient_id <- substr(non_synonymous_dataset$Tumor_Sample_Barcode[i], 1, 12)
+  
+  gene_patient_matrix[gene_name, patient_id] <- 1
+}
+
+# Convert to Dataframe
+gene_patient_matrix <- as.data.frame(gene_patient_matrix)
 ```
 
 ## 3.2 Calculate Mutation Frequencies
