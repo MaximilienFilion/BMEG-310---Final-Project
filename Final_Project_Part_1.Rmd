@@ -447,25 +447,39 @@ gene_patient_matrix <- as.data.frame(gene_patient_matrix)
 ## 3.2 Calculate Mutation Frequencies
 # Sum mutations across all patients for each gene
 ```{r inv1_frequency}
-# Calculate total mutations per gene
-# [INSERT CODE HERE]
+# Create a relative frequency vector
+gene_frequency_vector <- data.frame(
+  Hugo_Symbol = rownames(gene_patient_matrix),
+  Frequency = (rowSums(gene_patient_matrix))/(ncol(gene_patient_matrix))
+)
+#rownames(gene_frequency_vector) <- #rownames(gene_patient_matrix)
+
 
 # Sort genes by mutation frequency (descending)
-# [INSERT CODE HERE]
+gene_frequency_vector <- gene_frequency_vector[order(-gene_frequency_vector$Frequency), , drop = FALSE]
 
 # Extract top 20 genes
-# [INSERT CODE HERE]
+top_20_genes <- head(gene_frequency_vector, 20)
 
-# Display top 20 genes and their frequencies
-# [INSERT CODE HERE]
+# Display top 20 genes
+top_20_genes
 ```
 
 ## 3.3 Visualize Top 20 Mutated Genes
 # Create bar plot or lollipop chart
 ```{r inv1_visualize}
-# Create visualization of top 20 genes
-# Options: bar plot, lollipop chart, or horizontal bar chart
-# [INSERT CODE HERE]
+# Create visualization of top 20 genes. Create a relative frequency so the data makes more sense
+ggplot(top_20_genes, aes(x = reorder(Hugo_Symbol, -Frequency), y = Frequency)) +
+  geom_col(fill = "steelblue") +
+  labs(title = "Top 20 Mutated Genes in KIRC",
+       x = "Gene",
+       y = "Relative Mutation Frequency") +
+  theme_minimal() +
+  theme(
+  plot.title = element_text(hjust = 0.5, size = 16, face = "bold"),
+  axis.text.x = element_text(angle = 45, hjust = 1),
+  axis.text.y = element_text(size = 12)
+  )
 ```
 
 **Observations:**
