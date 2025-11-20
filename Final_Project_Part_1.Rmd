@@ -440,7 +440,7 @@ for (i in 1:nrow(non_synonymous_dataset)) {
   gene_patient_matrix[gene_name, patient_id] <- 1
 }
 
-# Convert to Dataframe
+# Convert to Data frame
 gene_patient_matrix <- as.data.frame(gene_patient_matrix)
 ```
 
@@ -452,8 +452,6 @@ gene_frequency_vector <- data.frame(
   Hugo_Symbol = rownames(gene_patient_matrix),
   Frequency = (rowSums(gene_patient_matrix))/(ncol(gene_patient_matrix))
 )
-#rownames(gene_frequency_vector) <- #rownames(gene_patient_matrix)
-
 
 # Sort genes by mutation frequency (descending)
 gene_frequency_vector <- gene_frequency_vector[order(-gene_frequency_vector$Frequency), , drop = FALSE]
@@ -471,7 +469,7 @@ top_20_genes
 # Create visualization of top 20 genes. Create a relative frequency so the data makes more sense
 ggplot(top_20_genes, aes(x = reorder(Hugo_Symbol, -Frequency), y = Frequency)) +
   geom_col(fill = "steelblue") +
-  labs(title = "Top 20 Mutated Genes in KIRC",
+  labs(title = "Top 20 Non-Synonymously Mutated Genes in KIRC",
        x = "Gene",
        y = "Relative Mutation Frequency") +
   theme_minimal() +
