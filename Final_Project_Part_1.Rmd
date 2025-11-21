@@ -514,23 +514,46 @@ gene_patient_matrix_reduced <- t(gene_patient_matrix_reduced)
 ## 3.2.2 Apply HDBSCAN Clustering
 # Perform density-based clustering
 ```{r inv4_hdbscan}
-# Determine the minimum size of a cluster 
-min_size <- c(5, 10, 20, 30, 40, 50)
+min_pts <- c(2, 5, 10, 15, 20, 25, 30, 35)
+hdbscan_list <- list()
 
-hdbscan_results <- hdbscan(gene_patient_matrix_reduced, minPts = 30)
-hdbscan_results
-plot(hdbscan_results)
+# Fit all models
+for (i in seq_along(min_pts)) {
+  hdbscan_list[[i]] <- hdbscan(gene_patient_matrix_reduced,
+                               minPts = min_pts[i])
+}
 ```
 
 ## 3.2.3 Visualize HDBSCAN Clusters
-# Plot clusters in reduced dimensional space
 ```{r inv4_visualize}
-# If dimensionality reduction was performed, create scatter plot
-# Color points by cluster assignment
-# [INSERT CODE HERE]
+# Plot all clusterings in one figure
+par(mfrow = c(2, 4))
 
-# Highlight noise/outlier points
-# [INSERT CODE HERE]
+for (i in seq_along(min_pts)) {
+  res <- hdbscan_list[[i]]
+  
+  # Check for clusters and condensed tree
+  num_clusters <- length(unique(res$cluster[res$cluster != 0]))
+  tree_exists <- !is.null(res$condensedTree) && nrow(res$condensedTree) > 0
+  
+  if (num_clusters > 0 && tree_exists) {
+    plot(res$condensedTree, main = paste("minPts =", min_pts[i]))
+  } else {
+    # Empty plot with message
+    plot.new()
+    title(main = paste("minPts =", min_pts[i]))
+    text(0.5, 0.5, "No clusters found", cex = 1.2)
+  }
+}
+
+
+# Also print some statistics
+for (i in seq_along(min_pts)) {
+  cat("\n==== Results for minPts =", min_pts[i], "====\n")
+  print(hdbscan_list[[i]])
+  
+## ChatGPT was used to help plot all the plots in the same image
+}
 ```
 
 **Observations:**
