@@ -13,7 +13,11 @@ output:
 # Final Project Part 1
 ## Clinical data Analysis
 
-### Download the data
+# ==============================================================================
+# SECTION 1: DATA PREPROCESSING
+# ==============================================================================
+
+## 1.1 Download the data
 ```{r}
 RNAseq_KIRC <- read.csv("RNAseq_KIRC.csv")
 data_clinical_patient <- read.delim("data_clinical_patient.txt", header = TRUE, sep = "\t", skip = 4)
@@ -21,7 +25,7 @@ data_mutations <- read.delim("data_mutations.txt", header = TRUE, sep = "\t", st
 head(data_clinical_patient)
 ```
 
-### Run the intersect of all the patient sets - code reused from lab 7 submission
+## 1.2 Run the intersect of all the patient sets - code reused from lab 7 submission
 ```{r}
 # RNAseq_KIRC dataset
 rna_patient_ids <- gsub("\\.", "-", substr(colnames(RNAseq_KIRC), 1, 12))
@@ -36,7 +40,7 @@ mutation_patient_ids <- unique(substr(data_mutations$Tumor_Sample_Barcode, 1, 12
 common_patients <- Reduce(intersect, list(rna_patient_ids, clinical_patient_ids, mutation_patient_ids))
 ```
 
-### Data Cleaning
+## 1.3 Data Cleaning
 ```{r}
 # Tumour Stage: AJCC_PATHOLOGIC_TUMOR_STAGE
 # OS: Overall Survival - Time from the start of the study/treatment to death from any cause.
@@ -117,8 +121,11 @@ data_clinical_patient <- data_clinical_patient %>%
 head(data_clinical_patient, 100)
 ```
 
-## Data Exploration 
-### Age of KIRC Patients
+# ==============================================================================
+# SECTION 2: DATA EXPLORATION
+# ==============================================================================
+
+## 2.1 Age of KIRC Patients
 ```{r}
 # Age associated with patients
 # Check this - I got rid of matching step 
@@ -143,7 +150,7 @@ ggplot(age_df, aes(x = AGE)) +
 
 What did we notice?
 
-### Tumor Stage of KIRC Patients
+## 2.2 Tumor Stage of KIRC Patients
 ```{r}
 # Tumor stage associated with patients
 # Convert to a dataframe
@@ -162,7 +169,7 @@ ggplot(stage_df, aes(x = STAGE)) +
 
 What did we notice?
 
-### Sex, Ethnicity, Race, and Ancestry of KIRC Patients
+## 2.3 Sex, Ethnicity, Race, and Ancestry of KIRC Patients
 ```{r}
 # Find the different Categories
 #head(data_clinical_patient, 30)
@@ -221,7 +228,7 @@ plot_donut(data_clinical_patient, "GENETIC_ANCESTRY_LABEL", "Ancestry Distributi
 
 What did we notice?
 
-### Survival Analysis of Overall Survival (OS)
+## 2.4 Survival Analysis of Overall Survival (OS)
 ```{r}
 
 library(survival)
@@ -248,7 +255,7 @@ ggsurvplot(fit_os,
 
 What did we notice?
 
-### Survival Analysis of Disease-Specific Survival (DSS)
+## 2.5 Survival Analysis of Disease-Specific Survival (DSS)
 ```{r}
 surv_dss <- Surv(time = data_clinical_patient$DSS_MONTHS, 
                  event = 1 - data_clinical_patient$DSS_STATUS)
@@ -268,7 +275,7 @@ ggsurvplot(fit_dss,
 
 What did we notice?
 
-### Survival Analysis of Progression-Free Survival(PFS)
+## 2.6 Survival Analysis of Progression-Free Survival(PFS)
 ```{r}
 surv_pfs <- Surv(time = data_clinical_patient$PFS_MONTHS, 
                  event = 1 - data_clinical_patient$PFS_STATUS)
@@ -288,7 +295,7 @@ ggsurvplot(fit_pfs,
 
 What did we notice?
 
-### Survival Analysis of Disease-Free Survival (DFS)
+## 2.7 Survival Analysis of Disease-Free Survival (DFS)
 ```{r}
 surv_dfs <- Surv(time = data_clinical_patient$DFS_MONTHS, 
                  event = 1 - data_clinical_patient$DFS_STATUS)
@@ -308,7 +315,7 @@ ggsurvplot(fit_dfs,
 
 What did we notice?
 
-### Survival Analysis of Age
+## 2.8 Survival Analysis of Age
 ```{r}
 # Create age groups (above vs below median)
 median_age <- median(data_clinical_patient$AGE, na.rm = TRUE)
@@ -338,7 +345,7 @@ ggsurvplot(fit_age,
 
 What did we notice?
 
-### Survival Analysis of Cancer Stage
+## 2.9 Survival Analysis of Cancer Stage
 ```{r}
 # Make sure stage is factor
 data_clinical_patient$STAGE_FACTOR <- factor(data_clinical_patient$AJCC_PATHOLOGIC_TUMOR_STAGE)
@@ -365,7 +372,7 @@ ggsurvplot(fit_stage,
 
 What did we notice?
 
-### Survival Analysis of Sex
+## 2.10 Survival Analysis of Sex
 ```{r}
 # Make sure sex is factor
 data_clinical_patient$SEX <- factor(ifelse(is.na(data_clinical_patient$SEX) | 
@@ -394,7 +401,7 @@ ggsurvplot(fit_sex,
 
 ## Analyses
 
-==============================================================================
+# ==============================================================================
 # SECTION 3: MUTATION DATA ANALYSIS
 # ==============================================================================
 
@@ -402,7 +409,7 @@ ggsurvplot(fit_sex,
 # INVESTIGATION 1: Top 20 Most Mutated Genes
 # ==============================================================================
 
-## 3.1 Build Gene-Patient Mutation Matrix (Data Frame)
+## 3.1.1 Build Gene-Patient Mutation Matrix (Data Frame)
 # Create binary matrix: rows = genes, columns = patients
 We decided to keep only the damaging mutations and exclude the potentially damageable or non-damageable mutations.
 ```{r inv1_matrix}
@@ -444,7 +451,7 @@ for (i in 1:nrow(non_synonymous_dataset)) {
 gene_patient_matrix <- as.data.frame(gene_patient_matrix)
 ```
 
-## 3.2 Calculate Mutation Frequencies
+## 3.1.2 Calculate Mutation Frequencies
 # Sum mutations across all patients for each gene
 ```{r inv1_frequency}
 # Create a relative frequency vector
@@ -463,7 +470,7 @@ top_20_genes <- head(gene_frequency_vector, 20)
 top_20_genes
 ```
 
-## 3.3 Visualize Top 20 Mutated Genes
+## 3.1.3 Visualize Top 20 Mutated Genes
 # Create bar plot or lollipop chart
 ```{r inv1_visualize}
 # Create visualization of top 20 genes. Create a relative frequency so the data makes more sense
@@ -483,239 +490,118 @@ ggplot(top_20_genes, aes(x = reorder(Hugo_Symbol, -Frequency), y = Frequency)) +
 **Observations:**
 # [COMMENT HERE: Which genes are most frequently mutated? Any expected oncogenes?]
 
-
 # ==============================================================================
-# INVESTIGATION 2: Hierarchical Clustering of Mutated Genes
-# ==============================================================================
-
-## 3.4 Prepare Data for Hierarchical Clustering
-# Use gene-patient matrix with top genes or all genes
-```{r inv2_prep}
-# Decide on genes to include (top N or all with sufficient mutations)
-# [INSERT CODE HERE]
-
-# Prepare matrix for clustering (may need to transpose)
-# [INSERT CODE HERE]
-
-# Handle missing values if any
-# [INSERT CODE HERE]
-```
-
-## 3.5 Apply Ward Hierarchical Clustering
-# Perform hierarchical clustering with Ward linkage
-```{r inv2_ward}
-# Calculate distance matrix
-# Suggested distance: Euclidean or Binary (Jaccard/Hamming)
-# [INSERT CODE HERE]
-
-# Apply Ward linkage clustering
-# [INSERT CODE HERE]
-
-# Generate dendrogram
-# [INSERT CODE HERE]
-
-# Determine optimal number of clusters
-# Methods: dendrogram inspection, silhouette analysis, elbow method
-# [INSERT CODE HERE]
-
-# Cut dendrogram to create cluster assignments
-# [INSERT CODE HERE]
-
-# Display cluster sizes
-# [INSERT CODE HERE]
-```
-
-## 3.6 Apply Ward.D2 Hierarchical Clustering
-# Repeat with Ward.D2 linkage method
-```{r inv2_ward_d2}
-# Apply Ward.D2 linkage clustering
-# [INSERT CODE HERE]
-
-# Generate dendrogram
-# [INSERT CODE HERE]
-
-# Cut dendrogram for cluster assignments
-# [INSERT CODE HERE]
-
-# Compare cluster sizes with Ward method
-# [INSERT CODE HERE]
-```
-
-## 3.7 Compare Clustering Methods
-# Evaluate agreement between Ward and Ward.D2
-```{r inv2_compare}
-# Create comparison table or confusion matrix
-# [INSERT CODE HERE]
-
-# Calculate agreement metrics (e.g., Adjusted Rand Index)
-# [INSERT CODE HERE]
-```
-
-**Observations:**
-# [COMMENT HERE: Do both methods identify similar clusters? Which seems better?]
-
-
-# ==============================================================================
-# INVESTIGATION 3: Patient Outcomes Across Hierarchical Clusters
+# INVESTIGATION 2: Hierarchy-Based Clustering
 # ==============================================================================
 
-## 3.8 Assign Patients to Clusters
-# Link cluster assignments to patient clinical data
-```{r inv3_assign}
-# Add cluster assignment to clinical data
-# Use clusters from best hierarchical method (Ward or Ward.D2)
-# [INSERT CODE HERE]
-
-# Display cluster distribution
-# [INSERT CODE HERE]
-```
-
-## 3.9 Kaplan-Meier Curves by Cluster
-# Compare survival outcomes across clusters
-```{r inv3_survival}
-# --- Overall Survival (OS) ---
-# [INSERT CODE HERE]
-
-# --- Disease-Specific Survival (DSS) ---
-# [INSERT CODE HERE]
-
-# --- Progression-Free Survival (PFS) ---
-# [INSERT CODE HERE]
-
-# --- Disease-Free Survival (DFS) ---
-# [INSERT CODE HERE]
-
-# Perform log-rank tests for each outcome
-# [INSERT CODE HERE]
-```
-
-**Observations:**
-# [COMMENT HERE: Do clusters show different survival patterns?]
-
-## 3.10 ANOVA for Continuous Variables
-# Test if age differs significantly across clusters
-```{r inv3_anova}
-# One-way ANOVA for age
-# [INSERT CODE HERE]
-
-# If significant, perform Tukey HSD post-hoc test
-# [INSERT CODE HERE]
-
-# Visualize age distribution by cluster (boxplot)
-# [INSERT CODE HERE]
-```
-
-**Observations:**
-# [COMMENT HERE: Do clusters have different age distributions?]
-
-## 3.11 Chi-Square Tests for Categorical Variables
-# Test if categorical variables differ across clusters
-```{r inv3_chisq}
-# --- Tumor Stage ---
-# [INSERT CODE HERE]
-
-# --- Sex ---
-# [INSERT CODE HERE]
-
-# --- Ethnicity ---
-# [INSERT CODE HERE]
-
-# Create contingency tables and visualizations
-# [INSERT CODE HERE]
-```
-
-**Observations:**
-# [COMMENT HERE: Which clinical variables differ by cluster?]
-
-
-# ==============================================================================
-# INVESTIGATION 4: Density-Based Clustering (HDBSCAN)
-# ==============================================================================
-
-## 3.12 Prepare Data for HDBSCAN
-# Use same gene-patient matrix as hierarchical clustering
+## 3.2.1 Prepare Data
 ```{r inv4_prep}
-library(dbscan)
+# Prepare matrix for clustering - Only the top 20 mutated genes
+important_genes <- top_20_genes$Hugo_Symbol
+gene_patient_matrix_reduced <- gene_patient_matrix[
+  rownames(gene_patient_matrix) %in% important_genes,,drop = FALSE]
+gene_patient_matrix_reduced <- t(gene_patient_matrix_reduced)
 
-# Prepare matrix (same as Investigation 2)
-# [INSERT CODE HERE]
-
-# Optional: Perform dimensionality reduction for visualization
-# Methods: PCA, t-SNE, UMAP
-# [INSERT CODE HERE]
 ```
 
-## 3.13 Apply HDBSCAN Clustering
-# Perform density-based clustering
+## 3.2.2 Apply Hierarchical Clustering
+# Perform hierarchy-based clustering
 ```{r inv4_hdbscan}
-# Apply HDBSCAN with parameter tuning
-# Key parameters: minPts (min_cluster_size), min_samples
-# [INSERT CODE HERE]
+# Create a distance matrix
+dist_matrix <- dist(gene_patient_matrix_reduced, method = "binary")
 
-# Extract cluster assignments (note: -1 or 0 may indicate noise/outliers)
-# [INSERT CODE HERE]
-
-# Display cluster sizes (including noise)
-# [INSERT CODE HERE]
+# Fit the hierarchical clustering using Ward and ward.D2
+hc_1 <- hclust(dist_matrix, method = "ward.D")
+hc_2 <- hclust(dist_matrix, method = "ward.D2")
 ```
 
-## 3.14 Visualize HDBSCAN Clusters
-# Plot clusters in reduced dimensional space
-```{r inv4_visualize}
-# If dimensionality reduction was performed, create scatter plot
-# Color points by cluster assignment
-# [INSERT CODE HERE]
-
-# Highlight noise/outlier points
-# [INSERT CODE HERE]
+## 3.2.3 Visualize Dendrogram
+```{r inv4_hdbscan}
+# Visualize as dendrograms
+plot(hc_1, main = "Ward.D Hierarchical Clustering of KIRC Patients",
+     xlab = "KIRC Patients", sub = "", cex = 0.8, labels = FALSE)
+plot(hc_2, main = "Ward.D2 Hierarchical Clustering of KIRC Patients",
+     xlab = "KIRC Patients", sub = "", cex = 0.8, labels = FALSE)
 ```
 
 **Observations:**
 # [COMMENT HERE: How many clusters detected? Are they well-separated?]
 
 
-# ==============================================================================
-# INVESTIGATION 5: Patient Outcomes Across HDBSCAN Clusters
-# ==============================================================================
-
-## 3.15 Assign Patients to HDBSCAN Clusters
-# Link HDBSCAN cluster assignments to clinical data
-```{r inv5_assign}
-# Add HDBSCAN cluster to clinical data
-# [INSERT CODE HERE]
-
-# Decide how to handle noise/outlier group
-# Options: exclude, analyze separately, group with closest cluster
-# [INSERT CODE HERE]
-
-# Display cluster distribution
-# [INSERT CODE HERE]
+## 3.2.3 Assign Cluster to Patients
+```{r}
+# After Observation it was determined that 4 significant clusters were present in the datastet
+k <- 4
+clusters_ward_D1 <- cutree(hc_1, k=k)
+clusters_ward_D2 <- cutree(hc_2, k=k)
 ```
 
-## 3.16 Kaplan-Meier Curves by HDBSCAN Cluster
-# Compare survival outcomes across density-based clusters
+
+# ==============================================================================
+# INVESTIGATION 3: Patient Outcomes Across Hierarchical Clusters
+# ==============================================================================
+
+## 3.3.1 Assign Patients to hierarchical Clusters
+# Link cluster assignments to clinical data
+```{r inv5_assign}
+# Create a new data frame that has the disease-specific survival, and all the clustering data
+clustering_data <- data.frame(
+  clusters_ward_D1 = clusters_ward_D1,
+  clusters_ward_D2 = clusters_ward_D2,
+  PATIENT_ID = names(clusters_ward_D1)
+)
+
+rownames(clustering_data) <- NULL
+
+clinical_data_subset <- data_clinical_patient[
+ data_clinical_patient$PATIENT_ID %in% clustering_data$PATIENT_ID,
+ c("PATIENT_ID", "DSS_STATUS", "DSS_MONTHS")
+]
+
+merged_data <- merge(
+ clustering_data,
+ clinical_data_subset,
+ by = "PATIENT_ID",
+ all.x = FALSE,  # keep only patients in both datasets
+ all.y = FALSE
+)
+
+merged_data
+```
+
+## 3.3.2 Kaplan-Meier Curves by  Cluster
+# Compare survival outcomes across clusters
 ```{r inv5_survival}
-# --- Overall Survival (OS) ---
-# [INSERT CODE HERE]
+surv_obj_ward <- Surv(time = merged_data$DSS_MONTHS, event=merged_data$DSS_STATUS)
 
-# --- Disease-Specific Survival (DSS) ---
-# [INSERT CODE HERE]
+# KM plot for ward_D1 clustering
+ward_d1 <- surv_fit(surv_obj_ward ~ clusters_ward_D1, data = merged_data)
+ggsurvplot(ward_d1,
+           data = merged_data,
+           pval = TRUE,
+           conf.int = TRUE,
+           title = "Disease Specific Survival for Identified Ward.D1 Hierarchical Cluster",
+           xlab = "Time (Months)",
+           ylab = "Survival Probability",
+           ggtheme = theme_minimal(base_size = 14))
 
-# --- Progression-Free Survival (PFS) ---
-# [INSERT CODE HERE]
-
-# --- Disease-Free Survival (DFS) ---
-# [INSERT CODE HERE]
-
-# Perform log-rank tests
-# [INSERT CODE HERE]
+# KM plot for ward_D2 clustering
+ward_d2 <- surv_fit(surv_obj_ward ~ clusters_ward_D2, data = merged_data)
+ggsurvplot(ward_d2,
+           data = merged_data,
+           pval = TRUE,
+           conf.int = TRUE,
+           title = "Disease Specific Survival for Identified Ward.D1 Hierarchical Cluster",
+           xlab = "Time (Months)",
+           ylab = "Survival Probability",
+           ggtheme = theme_minimal(base_size = 14))
 ```
 
 **Observations:**
-# [COMMENT HERE: Do HDBSCAN clusters differ in survival?]
+# [COMMENT HERE: Do  clusters differ in survival?]
 
-## 3.17 ANOVA for Continuous Variables (HDBSCAN)
-# Test age differences across HDBSCAN clusters
+## 3.3.3 ANOVA for Continuous Variables
+# Test age differences across clusters
 ```{r inv5_anova}
 # One-way ANOVA for age
 # [INSERT CODE HERE]
@@ -727,7 +613,7 @@ library(dbscan)
 # [INSERT CODE HERE]
 ```
 
-## 3.18 Chi-Square Tests for Categorical Variables (HDBSCAN)
+## 3.3.4 Chi-Square Tests for Categorical Variables
 # Test categorical variable differences
 ```{r inv5_chisq}
 # Tumor stage, sex, ethnicity, etc.
@@ -737,64 +623,103 @@ library(dbscan)
 # [INSERT CODE HERE]
 ```
 
-## 3.19 Compare Hierarchical vs HDBSCAN Results
-# Evaluate which clustering method better separates patient subgroups
-```{r inv5_compare}
-# Compare statistical significance of survival differences
-# [INSERT CODE HERE]
-
-# Compare clinical variable associations
-# [INSERT CODE HERE]
-
-# Discuss which method identifies more meaningful subgroups
-# [INSERT CODE HERE]
-```
-
-**Observations:**
-# [COMMENT HERE: Which clustering approach is more informative?]
-
 
 # ==============================================================================
-# INVESTIGATION 6: Co-Mutation and Mutual Exclusivity Analysis
+# INVESTIGATION 4: Co-Mutation and Mutual Exclusivity Analysis
 # ==============================================================================
 
-## 3.20 Create Fisher's Exact Test Function
+## 3.4.1 Create Fisher's Exact Test Function
 # Function to test co-occurrence or mutual exclusivity between gene pairs
 ```{r inv6_function}
-# Function: fisher_test_genes(gene1, gene2, mutation_matrix)
+# Function: fisher_test_genes(gene1, gene2, gene_patient_matrix)
 # Inputs: Two gene names and mutation matrix
 # Outputs: Odds ratio, p-value, relationship type
-# [INSERT CODE HERE]
+# Function: fisher_test_genes(gene1, gene2, gene_patient_matrix)
+fisher_test_genes <- function(gene1, gene2, gene_patient_matrix) {
+
+  g1 <- gene_patient_matrix[, gene1]
+  g2 <- gene_patient_matrix[, gene2]
+
+  # Build 2x2 contingency table
+  contingency <- table(g1, g2)
+
+  # Skip genes with insufficient combinations
+  if (!all(dim(contingency) == c(2, 2))) {
+    return(list(odds_ratio = NA, p_value = NA, relationship = "Insufficient data"))
+  }
+
+  test <- fisher.test(contingency)
+
+  #odds_ratio <- test$estimate
+  odds_ratio <- unname(test$estimate)
+  p_val <- test$p.value
+
+  relationship <- ifelse(
+    is.na(odds_ratio), 
+    "Insufficient data",
+    ifelse(odds_ratio > 1, "Co-mutation",
+           ifelse(odds_ratio < 1, "Mutual exclusivity", "No association"))
+  )
+
+  return(list(odds_ratio = odds_ratio, p_value = p_val, relationship = relationship))
+}
 ```
 
-## 3.21 Test All Pairwise Combinations of Top 20 Genes
+## 3.4.2 Test All Pairwise Combinations of Top 20 Genes
 # Run Fisher's exact test for all gene pairs
 ```{r inv6_pairwise}
 # Get top 20 genes from Investigation 1
-# [INSERT CODE HERE]
+top20_gene_names <- top_20_genes$Hugo_Symbol
+
+#matrix has patients as columns and genes as rows. Transpose matrix for fischer
+t_gene_patient_matrix <- t(gene_patient_matrix)
+t_gene_patient_matrix <- as.data.frame(t_gene_patient_matrix)
+colnames(t_gene_patient_matrix)[1:20]
+valid_genes <- intersect(top20_gene_names, colnames(t_gene_patient_matrix))
+valid_genes
 
 # Generate all pairwise combinations (190 pairs)
-# [INSERT CODE HERE]
+pairs <- combn(valid_genes, 2, simplify = FALSE)
 
 # Apply Fisher's exact test to each pair
 # Store results in dataframe: gene1, gene2, odds_ratio, p_value
-# [INSERT CODE HERE]
+results <- data.frame()
+for (pair in pairs) {
+  g1 <- pair[1]
+  g2 <- pair[2]
+
+  res <- fisher_test_genes(g1, g2, t_gene_patient_matrix)
+
+  results <- rbind(
+    results,
+    data.frame(
+      Gene1 = g1,
+      Gene2 = g2,
+      OR = res$odds_ratio,
+      p_value = res$p_value,
+      relationship_raw = res$relationship
+    )
+  )
+}
+results
 ```
 
-## 3.22 Multiple Testing Correction
+## 3.4.3 Multiple Testing Correction
 # Adjust p-values for multiple comparisons
 ```{r inv6_correction}
 # Apply Bonferroni correction
-# [INSERT CODE HERE]
+results$p_adjust_bonf <- p.adjust(results$p_value, method = "bonferroni")
 
+# decided to use Benjamini-Hochberg - explained in paper 
 # OR apply Benjamini-Hochberg FDR correction
-# [INSERT CODE HERE]
+results$p_adjust_fdr <- p.adjust(results$p_value, method = "BH")
 
 # Filter for significant pairs (adjusted p-value < 0.05)
-# [INSERT CODE HERE]
+results_signif <- subset(results, p_adjust_bonf < 0.05)
+results
 ```
 
-## 3.23 Identify Co-Mutation and Mutual Exclusivity
+## 3.4.4 Identify Co-Mutation and Mutual Exclusivity
 # Classify significant gene pairs
 ```{r inv6_classify}
 # Co-mutation: Odds ratio > 1 and significant p-value
@@ -808,9 +733,12 @@ library(dbscan)
 
 # Sort and display top mutually exclusive pairs
 # [INSERT CODE HERE]
+
+
+#since none are significant, should I examine pairs with the lowest uncorrected p-values or most extreme odds ratios? 
 ```
 
-## 3.24 Visualize Gene-Gene Relationships
+## 3.4.5 Visualize Gene-Gene Relationships
 # Create heatmap and network diagram
 ```{r inv6_visualize}
 # Create heatmap of odds ratios for top 20 genes
@@ -830,10 +758,10 @@ library(dbscan)
 
 
 # ==============================================================================
-# INVESTIGATION 7: Disease-Specific Survival and Top 20 Genes
+# INVESTIGATION 5: Disease-Specific Survival and Top 20 Genes
 # ==============================================================================
 
-## 3.25 Survival Analysis for Each Top Gene
+## 3.5.1 Survival Analysis for Each Top Gene
 # Test association between each gene mutation and DSS
 ```{r inv7_individual}
 
@@ -962,7 +890,7 @@ gene_dss_results <- gene_dss_results[order(gene_dss_results$P_Value), ]
 print(gene_dss_results)
 ```
 
-## 3.26 Multiple Testing Correction
+## 3.5.2 Multiple Testing Correction
 # Adjust p-values for 20 comparisons
 ```{r inv7_correction}
 # Apply Bonferroni correction
@@ -1019,7 +947,7 @@ if (n_nominal > 0 & n_fdr == 0) {
 
 ```
 
-## 3.27 Visualize Results
+## 3.5.3 Visualize Results
 # Create forest plot and summary table
 ```{r inv7_visualize}
 library(ggplot2)
@@ -1109,6 +1037,7 @@ The analysis reveals several key findings about gene mutations and disease-speci
    - Potential therapeutic targets
    - Indicators for treatment selection
 
+<<<<<<< HEAD
 
 ## 3.28 ALTERNATIVE ANALYSIS: Synonymous vs Non-Synonymous Mutations
 # Compare survival outcomes by mutation type
@@ -1301,6 +1230,39 @@ if (nrow(mutation_type_results) == 0) {
 
 ```
 
+=======
+# ==============================================================================
+# SECTION 4: COMPREHENSIVE RESULTS SUMMARY
+# ==============================================================================
+
+## 4.1 Summary of Key Findings
+```{r summary}
+# Create comprehensive summary tables and figures
+
+# --- DEMOGRAPHICS AND CLINICAL CHARACTERISTICS ---
+# [INSERT CODE HERE]
+
+# --- SURVIVAL OUTCOMES ---
+# Median survival times for OS, DSS, PFS, DFS
+# [INSERT CODE HERE]
+
+# --- MUTATION ANALYSIS ---
+# Top mutated genes and their frequencies
+# [INSERT CODE HERE]
+
+# --- CLUSTERING RESULTS ---
+# Number of clusters, sizes, clinical associations
+# [INSERT CODE HERE]
+
+# --- GENE-GENE INTERACTIONS ---
+# Significant co-mutations and mutual exclusivity
+# [INSERT CODE HERE]
+
+# --- PROGNOSTIC GENES ---
+# Genes significantly associated with DSS
+# [INSERT CODE HERE]
+```
+>>>>>>> 522abae87f0b04a90302f63b3b085ddb3fbd85c0
 
 
 # ==============================================================================
