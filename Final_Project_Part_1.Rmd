@@ -491,18 +491,11 @@ ggplot(top_20_genes, aes(x = reorder(Hugo_Symbol, -Frequency), y = Frequency)) +
 # [COMMENT HERE: Which genes are most frequently mutated? Any expected oncogenes?]
 
 # ==============================================================================
-# INVESTIGATION 2: HIERARCHICAL Density-Based Clustering (HDBSCAN)
+# INVESTIGATION 2: Hierarchy-Based Clustering
 # ==============================================================================
 
-## 3.2.1 Prepare Data for HDBSCAN
-# Use same gene-patient matrix as hierarchical clustering
+## 3.2.1 Prepare Data
 ```{r inv4_prep}
-# Download DBSCAN library
-# install.packages("dbscan")
-
-# Load the library
-library(dbscan)
-
 # Prepare matrix for clustering - Only the top 20 mutated genes
 important_genes <- top_20_genes$Hugo_Symbol
 gene_patient_matrix_reduced <- gene_patient_matrix[
@@ -511,97 +504,104 @@ gene_patient_matrix_reduced <- t(gene_patient_matrix_reduced)
 
 ```
 
-## 3.2.2 Apply HDBSCAN Clustering
-# Perform density-based clustering
+## 3.2.2 Apply Hierarchical Clustering
+# Perform hierarchy-based clustering
 ```{r inv4_hdbscan}
-min_pts <- c(2, 5, 10, 15, 20, 25, 30, 35)
-hdbscan_list <- list()
+# Create a distance matrix
+dist_matrix <- dist(gene_patient_matrix_reduced, method = "binary")
 
-# Fit all models
-for (i in seq_along(min_pts)) {
-  hdbscan_list[[i]] <- hdbscan(gene_patient_matrix_reduced,
-                               minPts = min_pts[i])
-}
+# Fit the hierarchical clustering using Ward and ward.D2
+hc_1 <- hclust(dist_matrix, method = "ward.D")
+hc_2 <- hclust(dist_matrix, method = "ward.D2")
 ```
 
-## 3.2.3 Visualize HDBSCAN Clusters
-```{r inv4_visualize}
-# Plot all clusterings in one figure
-par(mfrow = c(2, 4))
-
-for (i in seq_along(min_pts)) {
-  res <- hdbscan_list[[i]]
-  
-  # Check for clusters and condensed tree
-  num_clusters <- length(unique(res$cluster[res$cluster != 0]))
-  tree_exists <- !is.null(res$condensedTree) && nrow(res$condensedTree) > 0
-  
-  if (num_clusters > 0 && tree_exists) {
-    plot(res$condensedTree, main = paste("minPts =", min_pts[i]))
-  } else {
-    # Empty plot with message
-    plot.new()
-    title(main = paste("minPts =", min_pts[i]))
-    text(0.5, 0.5, "No clusters found", cex = 1.2)
-  }
-}
-
-
-# Also print some statistics
-for (i in seq_along(min_pts)) {
-  cat("\n==== Results for minPts =", min_pts[i], "====\n")
-  print(hdbscan_list[[i]])
-  
-## ChatGPT was used to help plot all the plots in the same image
-}
+## 3.2.3 Visualize Dendrogram
+```{r inv4_hdbscan}
+# Visualize as dendrograms
+plot(hc_1, main = "Ward.D Hierarchical Clustering of KIRC Patients",
+     xlab = "KIRC Patients", sub = "", cex = 0.8, labels = FALSE)
+plot(hc_2, main = "Ward.D2 Hierarchical Clustering of KIRC Patients",
+     xlab = "KIRC Patients", sub = "", cex = 0.8, labels = FALSE)
 ```
 
 **Observations:**
 # [COMMENT HERE: How many clusters detected? Are they well-separated?]
 
 
-# ==============================================================================
-# INVESTIGATION 3: Patient Outcomes Across HDBSCAN Clusters
-# ==============================================================================
-
-## 3.3.1 Assign Patients to HDBSCAN Clusters
-# Link HDBSCAN cluster assignments to clinical data
-```{r inv5_assign}
-# Add HDBSCAN cluster to clinical data
-# [INSERT CODE HERE]
-
-# Decide how to handle noise/outlier group
-# Options: exclude, analyze separately, group with closest cluster
-# [INSERT CODE HERE]
-
-# Display cluster distribution
-# [INSERT CODE HERE]
+## 3.2.3 Assign Cluster to Patients
+```{r}
+# After Observation it was determined that 4 significant clusters were present in the datastet
+k <- 4
+clusters_ward_D1 <- cutree(hc_1, k=k)
+clusters_ward_D2 <- cutree(hc_2, k=k)
 ```
 
-## 3.3.2 Kaplan-Meier Curves by HDBSCAN Cluster
-# Compare survival outcomes across density-based clusters
+
+# ==============================================================================
+# INVESTIGATION 3: Patient Outcomes Across Hierarchical Clusters
+# ==============================================================================
+
+## 3.3.1 Assign Patients to hierarchical Clusters
+# Link cluster assignments to clinical data
+```{r inv5_assign}
+# Create a new data frame that has the disease-specific survival, and all the clustering data
+clustering_data <- data.frame(
+  clusters_ward_D1 = clusters_ward_D1,
+  clusters_ward_D2 = clusters_ward_D2,
+  PATIENT_ID = names(clusters_ward_D1)
+)
+
+rownames(clustering_data) <- NULL
+
+clinical_data_subset <- data_clinical_patient[
+ data_clinical_patient$PATIENT_ID %in% clustering_data$PATIENT_ID,
+ c("PATIENT_ID", "DSS_STATUS", "DSS_MONTHS")
+]
+
+merged_data <- merge(
+ clustering_data,
+ clinical_data_subset,
+ by = "PATIENT_ID",
+ all.x = FALSE,  # keep only patients in both datasets
+ all.y = FALSE
+)
+
+merged_data
+```
+
+## 3.3.2 Kaplan-Meier Curves by  Cluster
+# Compare survival outcomes across clusters
 ```{r inv5_survival}
-# --- Overall Survival (OS) ---
-# [INSERT CODE HERE]
+surv_obj_ward <- Surv(time = merged_data$DSS_MONTHS, event=merged_data$DSS_STATUS)
 
-# --- Disease-Specific Survival (DSS) ---
-# [INSERT CODE HERE]
+# KM plot for ward_D1 clustering
+ward_d1 <- surv_fit(surv_obj_ward ~ clusters_ward_D1, data = merged_data)
+ggsurvplot(ward_d1,
+           data = merged_data,
+           pval = TRUE,
+           conf.int = TRUE,
+           title = "Disease Specific Survival for Identified Ward.D1 Hierarchical Cluster",
+           xlab = "Time (Months)",
+           ylab = "Survival Probability",
+           ggtheme = theme_minimal(base_size = 14))
 
-# --- Progression-Free Survival (PFS) ---
-# [INSERT CODE HERE]
-
-# --- Disease-Free Survival (DFS) ---
-# [INSERT CODE HERE]
-
-# Perform log-rank tests
-# [INSERT CODE HERE]
+# KM plot for ward_D2 clustering
+ward_d2 <- surv_fit(surv_obj_ward ~ clusters_ward_D2, data = merged_data)
+ggsurvplot(ward_d2,
+           data = merged_data,
+           pval = TRUE,
+           conf.int = TRUE,
+           title = "Disease Specific Survival for Identified Ward.D1 Hierarchical Cluster",
+           xlab = "Time (Months)",
+           ylab = "Survival Probability",
+           ggtheme = theme_minimal(base_size = 14))
 ```
 
 **Observations:**
-# [COMMENT HERE: Do HDBSCAN clusters differ in survival?]
+# [COMMENT HERE: Do  clusters differ in survival?]
 
-## 3.3.3 ANOVA for Continuous Variables (HDBSCAN)
-# Test age differences across HDBSCAN clusters
+## 3.3.3 ANOVA for Continuous Variables
+# Test age differences across clusters
 ```{r inv5_anova}
 # One-way ANOVA for age
 # [INSERT CODE HERE]
@@ -613,7 +613,7 @@ for (i in seq_along(min_pts)) {
 # [INSERT CODE HERE]
 ```
 
-## 3.3.4 Chi-Square Tests for Categorical Variables (HDBSCAN)
+## 3.3.4 Chi-Square Tests for Categorical Variables
 # Test categorical variable differences
 ```{r inv5_chisq}
 # Tumor stage, sex, ethnicity, etc.
@@ -622,22 +622,6 @@ for (i in seq_along(min_pts)) {
 # Contingency tables and visualizations
 # [INSERT CODE HERE]
 ```
-
-## 3.3.5 Compare Hierarchical vs HDBSCAN Results
-# Evaluate which clustering method better separates patient subgroups
-```{r inv5_compare}
-# Compare statistical significance of survival differences
-# [INSERT CODE HERE]
-
-# Compare clinical variable associations
-# [INSERT CODE HERE]
-
-# Discuss which method identifies more meaningful subgroups
-# [INSERT CODE HERE]
-```
-
-**Observations:**
-# [COMMENT HERE: Which clustering approach is more informative?]
 
 
 # ==============================================================================
