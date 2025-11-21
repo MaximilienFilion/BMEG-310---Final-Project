@@ -624,37 +624,92 @@ plot(hdbscan_results)
 ## 3.4.1 Create Fisher's Exact Test Function
 # Function to test co-occurrence or mutual exclusivity between gene pairs
 ```{r inv6_function}
-# Function: fisher_test_genes(gene1, gene2, mutation_matrix)
+# Function: fisher_test_genes(gene1, gene2, gene_patient_matrix)
 # Inputs: Two gene names and mutation matrix
 # Outputs: Odds ratio, p-value, relationship type
-# [INSERT CODE HERE]
+# Function: fisher_test_genes(gene1, gene2, gene_patient_matrix)
+fisher_test_genes <- function(gene1, gene2, gene_patient_matrix) {
+
+  g1 <- gene_patient_matrix[, gene1]
+  g2 <- gene_patient_matrix[, gene2]
+
+  # Build 2x2 contingency table
+  contingency <- table(g1, g2)
+
+  # Skip genes with insufficient combinations
+  if (!all(dim(contingency) == c(2, 2))) {
+    return(list(odds_ratio = NA, p_value = NA, relationship = "Insufficient data"))
+  }
+
+  test <- fisher.test(contingency)
+
+  #odds_ratio <- test$estimate
+  odds_ratio <- unname(test$estimate)
+  p_val <- test$p.value
+
+  relationship <- ifelse(
+    is.na(odds_ratio), 
+    "Insufficient data",
+    ifelse(odds_ratio > 1, "Co-mutation",
+           ifelse(odds_ratio < 1, "Mutual exclusivity", "No association"))
+  )
+
+  return(list(odds_ratio = odds_ratio, p_value = p_val, relationship = relationship))
+}
 ```
 
 ## 3.4.2 Test All Pairwise Combinations of Top 20 Genes
 # Run Fisher's exact test for all gene pairs
 ```{r inv6_pairwise}
 # Get top 20 genes from Investigation 1
-# [INSERT CODE HERE]
+top20_gene_names <- top_20_genes$Hugo_Symbol
+
+#matrix has patients as columns and genes as rows. Transpose matrix for fischer
+t_gene_patient_matrix <- t(gene_patient_matrix)
+t_gene_patient_matrix <- as.data.frame(t_gene_patient_matrix)
+colnames(t_gene_patient_matrix)[1:20]
+valid_genes <- intersect(top20_gene_names, colnames(t_gene_patient_matrix))
+valid_genes
 
 # Generate all pairwise combinations (190 pairs)
-# [INSERT CODE HERE]
+pairs <- combn(valid_genes, 2, simplify = FALSE)
 
 # Apply Fisher's exact test to each pair
 # Store results in dataframe: gene1, gene2, odds_ratio, p_value
-# [INSERT CODE HERE]
+results <- data.frame()
+for (pair in pairs) {
+  g1 <- pair[1]
+  g2 <- pair[2]
+
+  res <- fisher_test_genes(g1, g2, t_gene_patient_matrix)
+
+  results <- rbind(
+    results,
+    data.frame(
+      Gene1 = g1,
+      Gene2 = g2,
+      OR = res$odds_ratio,
+      p_value = res$p_value,
+      relationship_raw = res$relationship
+    )
+  )
+}
+results
 ```
 
 ## 3.4.3 Multiple Testing Correction
 # Adjust p-values for multiple comparisons
 ```{r inv6_correction}
 # Apply Bonferroni correction
-# [INSERT CODE HERE]
+results$p_adjust_bonf <- p.adjust(results$p_value, method = "bonferroni")
 
+# decided to use Benjamini-Hochberg - explained in paper 
 # OR apply Benjamini-Hochberg FDR correction
-# [INSERT CODE HERE]
+results$p_adjust_fdr <- p.adjust(results$p_value, method = "BH")
 
 # Filter for significant pairs (adjusted p-value < 0.05)
-# [INSERT CODE HERE]
+results_signif <- subset(results, p_adjust_bonf < 0.05)
+results
 ```
 
 ## 3.4.4 Identify Co-Mutation and Mutual Exclusivity
@@ -671,6 +726,9 @@ plot(hdbscan_results)
 
 # Sort and display top mutually exclusive pairs
 # [INSERT CODE HERE]
+
+
+#since none are significant, should I examine pairs with the lowest uncorrected p-values or most extreme odds ratios? 
 ```
 
 ## 3.4.5 Visualize Gene-Gene Relationships
