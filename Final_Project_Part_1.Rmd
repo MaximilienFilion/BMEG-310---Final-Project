@@ -174,8 +174,12 @@ What did we notice?
 # Find the different Categories
 #head(data_clinical_patient, 30)
 #unique(data_clinical_patient$GENETIC_ANCESTRY_LABEL)
-
+#install.packages("patchwork")
+#install.packages("gridExtra")
 library(ggplot2)
+library(patchwork)
+library(gridExtra)
+
 
 plot_donut <- function(data, column_name, title) {
   # Convert to character
@@ -220,10 +224,13 @@ plot_donut <- function(data, column_name, title) {
     theme_void()
 }
 
-plot_donut(data_clinical_patient, "SEX", "Sex Distribution")
-plot_donut(data_clinical_patient, "ETHNICITY", "Ethnicity Distribution")
-plot_donut(data_clinical_patient, "RACE", "Race Distribution")
-plot_donut(data_clinical_patient, "GENETIC_ANCESTRY_LABEL", "Ancestry Distribution")
+p1 <- plot_donut(data_clinical_patient, "SEX", "Sex Distribution")
+p2 <- plot_donut(data_clinical_patient, "ETHNICITY 7", "Ethnicity Distribution")
+p3 <- plot_donut(data_clinical_patient, "RACE", "Race Distribution")
+p4 <- plot_donut(data_clinical_patient, "GENETIC ANCESTRY", "Ancestry Distribution")
+
+(p1 | p2) / 
+(p3 | p4)
 ```
 
 What did we notice?
