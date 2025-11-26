@@ -156,15 +156,27 @@ What did we notice?
 # Convert to a dataframe
 stage_df <- data.frame(STAGE = data_clinical_patient$AJCC_PATHOLOGIC_TUMOR_STAGE)
 
+#Calculate counts and percentages
+stage_summary <- stage_df %>%
+  count(STAGE) %>%
+  mutate(
+    percentage = n / sum(n) * 100,
+    label = paste0(n)  
+  )
+
 # Plot the bar graph
-ggplot(stage_df, aes(x = STAGE)) +
-  geom_bar(fill = "skyblue", color = "black") +
+ggplot(stage_summary, aes(x = STAGE, y = percentage)) +
+  geom_bar(stat = "identity", fill = "skyblue", color = "black") +
+  geom_text(aes(label = label), vjust = -0.5, size = 4) +  # Add count labels above bars
   labs(
-    title = "Number of Patients by Tumor Stage",
+    title = "Percentage of Patients by Tumor Stage",
     x = "Tumor Stage",
-    y = "Count"
+    y = "Percentage (%)"
   ) +
-  theme_minimal(base_size = 14)
+  theme_minimal(base_size = 14) +
+  ylim(0, max(stage_summary$percentage) * 1.1)
+
+print(stage_summary)
 ```
 
 What did we notice?
@@ -225,9 +237,9 @@ plot_donut <- function(data, column_name, title) {
 }
 
 p1 <- plot_donut(data_clinical_patient, "SEX", "Sex Distribution")
-p2 <- plot_donut(data_clinical_patient, "ETHNICITY 7", "Ethnicity Distribution")
+p2 <- plot_donut(data_clinical_patient, "ETHNICITY", "Ethnicity Distribution")
 p3 <- plot_donut(data_clinical_patient, "RACE", "Race Distribution")
-p4 <- plot_donut(data_clinical_patient, "GENETIC ANCESTRY", "Ancestry Distribution")
+p4 <- plot_donut(data_clinical_patient, "GENETIC_ANCESTRY_LABEL", "Ancestry Distribution")
 
 (p1 | p2) / 
 (p3 | p4)
