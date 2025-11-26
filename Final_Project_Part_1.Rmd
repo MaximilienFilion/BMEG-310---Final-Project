@@ -1061,9 +1061,6 @@ The analysis reveals several key findings about gene mutations and disease-speci
 ## 3.28 ALTERNATIVE ANALYSIS: Synonymous vs Non-Synonymous Mutations
 # Compare survival outcomes by mutation type
 ```{r inv7_mutation_type}
-
-#I'm not sure if this section makes sense. I don't know if I did the analysis right here. Another set of eyes would be great here. 
-
 synonymous_types <- c("Silent")
 
 non_synonymous_types <- c(
@@ -1247,6 +1244,14 @@ if (nrow(mutation_type_results) == 0) {
   }
 }
 
+```
+```{r}
+#Extracted table of just top 5 genes to save space:
+top5 <- survival_results %>%
+  arrange(PValue) %>%
+  head(5)
+
+print(top5)
 ```
 
 =======
