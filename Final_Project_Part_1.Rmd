@@ -156,27 +156,15 @@ What did we notice?
 # Convert to a dataframe
 stage_df <- data.frame(STAGE = data_clinical_patient$AJCC_PATHOLOGIC_TUMOR_STAGE)
 
-#Calculate counts and percentages
-stage_summary <- stage_df %>%
-  count(STAGE) %>%
-  mutate(
-    percentage = n / sum(n) * 100,
-    label = paste0(n)  
-  )
-
 # Plot the bar graph
-ggplot(stage_summary, aes(x = STAGE, y = percentage)) +
-  geom_bar(stat = "identity", fill = "skyblue", color = "black") +
-  geom_text(aes(label = label), vjust = -0.5, size = 4) +  # Add count labels above bars
+ggplot(stage_df, aes(x = STAGE)) +
+  geom_bar(fill = "skyblue", color = "black") +
   labs(
-    title = "Percentage of Patients by Tumor Stage",
+    title = "Number of Patients by Tumor Stage",
     x = "Tumor Stage",
-    y = "Percentage (%)"
+    y = "Count"
   ) +
-  theme_minimal(base_size = 14) +
-  ylim(0, max(stage_summary$percentage) * 1.1)
-
-print(stage_summary)
+  theme_minimal(base_size = 14)
 ```
 
 What did we notice?
@@ -186,12 +174,8 @@ What did we notice?
 # Find the different Categories
 #head(data_clinical_patient, 30)
 #unique(data_clinical_patient$GENETIC_ANCESTRY_LABEL)
-#install.packages("patchwork")
-#install.packages("gridExtra")
-library(ggplot2)
-library(patchwork)
-library(gridExtra)
 
+library(ggplot2)
 
 plot_donut <- function(data, column_name, title) {
   # Convert to character
@@ -236,13 +220,10 @@ plot_donut <- function(data, column_name, title) {
     theme_void()
 }
 
-p1 <- plot_donut(data_clinical_patient, "SEX", "Sex Distribution")
-p2 <- plot_donut(data_clinical_patient, "ETHNICITY", "Ethnicity Distribution")
-p3 <- plot_donut(data_clinical_patient, "RACE", "Race Distribution")
-p4 <- plot_donut(data_clinical_patient, "GENETIC_ANCESTRY_LABEL", "Ancestry Distribution")
-
-(p1 | p2) / 
-(p3 | p4)
+plot_donut(data_clinical_patient, "SEX", "Sex Distribution")
+plot_donut(data_clinical_patient, "ETHNICITY", "Ethnicity Distribution")
+plot_donut(data_clinical_patient, "RACE", "Race Distribution")
+plot_donut(data_clinical_patient, "GENETIC_ANCESTRY_LABEL", "Ancestry Distribution")
 ```
 
 What did we notice?
@@ -330,103 +311,6 @@ ggsurvplot(fit_dfs,
            xlab = "Time (Months)",
            ylab = "Survival Probability",
            ggtheme = theme_minimal(base_size = 14))
-```
-```{r}
-# All in one Plot
-library(survival)
-library(survminer)
-library(ggpubr)
-
-## ---- OS ----
-surv_os <- Surv(time = data_clinical_patient$OS_MONTHS, 
-                event = 1 - data_clinical_patient$OS_STATUS)
-
-fit_os <- survfit(surv_os ~ 1)
-
-p_os <- ggsurvplot(
-  fit_os,
-  data = data_clinical_patient,
-  risk.table = TRUE,
-  conf.int = TRUE,
-  palette = "Dark2",
-  title = "Overall Survival",
-  xlab = "Time (Months)",
-  ylab = "Survival Probability",
-  ggtheme = theme_minimal(base_size = 14)
-)
-
-
-## ---- DSS ----
-surv_dss <- Surv(time = data_clinical_patient$DSS_MONTHS, 
-                 event = 1 - data_clinical_patient$DSS_STATUS)
-
-fit_dss <- survfit(surv_dss ~ 1)
-
-p_dss <- ggsurvplot(
-  fit_dss,
-  data = data_clinical_patient,
-  risk.table = TRUE,
-  conf.int = TRUE,
-  palette = "Dark2",
-  title = "Disease-Specific Survival",
-  xlab = "Time (Months)",
-  ylab = "Survival Probability",
-  ggtheme = theme_minimal(base_size = 14)
-)
-
-
-## ---- PFS ----
-surv_pfs <- Surv(time = data_clinical_patient$PFS_MONTHS, 
-                 event = 1 - data_clinical_patient$PFS_STATUS)
-
-fit_pfs <- survfit(surv_pfs ~ 1)
-
-p_pfs <- ggsurvplot(
-  fit_pfs,
-  data = data_clinical_patient,
-  risk.table = TRUE,
-  conf.int = TRUE,
-  palette = "Dark2",
-  title = "Progression-Free Survival",
-  xlab = "Time (Months)",
-  ylab = "Survival Probability",
-  ggtheme = theme_minimal(base_size = 14)
-)
-
-
-## ---- DFS ----
-surv_dfs <- Surv(time = data_clinical_patient$DFS_MONTHS, 
-                 event = 1 - data_clinical_patient$DFS_STATUS)
-
-fit_dfs <- survfit(surv_dfs ~ 1)
-
-p_dfs <- ggsurvplot(
-  fit_dfs,
-  data = data_clinical_patient,
-  risk.table = TRUE,
-  conf.int = TRUE,
-  palette = "Dark2",
-  title = "Disease-Free Survival",
-  xlab = "Time (Months)",
-  ylab = "Survival Probability",
-  ggtheme = theme_minimal(base_size = 14)
-)
-
-ggsurvplot_arrange(
-  list(p_os, p_dss, p_pfs, p_dfs),
-  ncol = 2,
-  nrow = 2
-)
-
-ggarrange(
-  p_os$plot,
-  p_dss$plot,
-  p_pfs$plot,
-  p_dfs$plot,
-  ncol = 2,
-  nrow = 2
-)
-
 ```
 
 What did we notice?
@@ -590,7 +474,7 @@ top_20_genes
 # Create bar plot or lollipop chart
 ```{r inv1_visualize}
 # Create visualization of top 20 genes. Create a relative frequency so the data makes more sense
-ggplot(top_20_genes, aes(x = reorder(Hugo_Symbol, -Frequency), y = Frequency)) +
+top_20_genes_plot <- ggplot(top_20_genes, aes(x = reorder(Hugo_Symbol, -Frequency), y = Frequency)) +
   geom_col(fill = "steelblue") +
   labs(title = "Top 20 Non-Synonymously Mutated Genes in KIRC",
        x = "Gene",
@@ -601,6 +485,12 @@ ggplot(top_20_genes, aes(x = reorder(Hugo_Symbol, -Frequency), y = Frequency)) +
   axis.text.x = element_text(angle = 45, hjust = 1),
   axis.text.y = element_text(size = 12)
   )
+
+#Print the plot
+top_20_genes_plot
+
+# Save the plot if needed
+ggsave(top_20_genes_plot, filename = "Top20NonsynonymouslyMutatedGenesinKIRC", device = "png", width = 7, height = 3, dpi = 300)
 ```
 
 **Observations:**
@@ -633,11 +523,33 @@ hc_2 <- hclust(dist_matrix, method = "ward.D2")
 
 ## 3.2.3 Visualize Dendrogram
 ```{r inv4_hdbscan}
-# Visualize as dendrograms
-plot(hc_1, main = "Ward.D Hierarchical Clustering of KIRC Patients",
-     xlab = "KIRC Patients", sub = "", cex = 0.8, labels = FALSE)
-plot(hc_2, main = "Ward.D2 Hierarchical Clustering of KIRC Patients",
-     xlab = "KIRC Patients", sub = "", cex = 0.8, labels = FALSE)
+library(ggplotify)
+
+# Compute cut heights for 4 clusters
+h_1 <- hc_1$height[length(hc_1$height) - 3]
+h_2 <- hc_2$height[length(hc_2$height) - 3]
+
+# Convert base R plots to ggplot
+hc_1_plot <- as.ggplot(~{
+  plot(hc_1, main="Ward.D Hierarchical Clustering of KIRC Patients",
+       xlab="KIRC Patients", sub="", cex=0.8, labels=FALSE)
+  abline(h = h_1, col = "red", lwd = 2, lty = 2)
+})
+
+hc_2_plot <- as.ggplot(~{
+  plot(hc_2, main="Ward.D2 Hierarchical Clustering of KIRC Patients",
+       xlab="KIRC Patients", sub="", cex=0.8, labels=FALSE)
+  abline(h = h_2, col = "red", lwd = 2, lty = 2)
+})
+
+# Display
+hc_1_plot
+hc_2_plot
+
+# Save
+ggsave("HierarchicalClusteringWardD.png", hc_1_plot, width=7, height=3, dpi=300)
+ggsave("HierarchicalClusteringWardD2.png", hc_2_plot, width=7, height=3, dpi=300)
+
 ```
 
 **Observations:**
@@ -660,7 +572,7 @@ clusters_ward_D2 <- cutree(hc_2, k=k)
 ## 3.3.1 Assign Patients to hierarchical Clusters
 # Link cluster assignments to clinical data
 ```{r inv5_assign}
-# Create a new data frame that has the disease-specific survival, and all the clustering data
+# Create a new data frame that has the disease-specific survival, overall survival, and all the clustering data
 clustering_data <- data.frame(
   clusters_ward_D1 = clusters_ward_D1,
   clusters_ward_D2 = clusters_ward_D2,
@@ -671,7 +583,7 @@ rownames(clustering_data) <- NULL
 
 clinical_data_subset <- data_clinical_patient[
  data_clinical_patient$PATIENT_ID %in% clustering_data$PATIENT_ID,
- c("PATIENT_ID", "DSS_STATUS", "DSS_MONTHS")
+ c("PATIENT_ID", "DSS_STATUS", "DSS_MONTHS", "OS_STATUS", "OS_MONTHS", "AGE", "AJCC_PATHOLOGIC_TUMOR_STAGE")
 ]
 
 merged_data <- merge(
@@ -688,11 +600,11 @@ merged_data
 ## 3.3.2 Kaplan-Meier Curves by  Cluster
 # Compare survival outcomes across clusters
 ```{r inv5_survival}
-surv_obj_ward <- Surv(time = merged_data$DSS_MONTHS, event=merged_data$DSS_STATUS)
+surv_obj_ward_DSS <- Surv(time = merged_data$DSS_MONTHS, event=merged_data$DSS_STATUS)
 
 # KM plot for ward_D1 clustering
-ward_d1 <- surv_fit(surv_obj_ward ~ clusters_ward_D1, data = merged_data)
-ggsurvplot(ward_d1,
+ward_d1_DSS <- surv_fit(surv_obj_ward_DSS ~ clusters_ward_D1, data = merged_data)
+ward_d1_DSS_plot <- ggsurvplot(ward_d1_DSS,
            data = merged_data,
            pval = TRUE,
            conf.int = TRUE,
@@ -702,15 +614,54 @@ ggsurvplot(ward_d1,
            ggtheme = theme_minimal(base_size = 14))
 
 # KM plot for ward_D2 clustering
-ward_d2 <- surv_fit(surv_obj_ward ~ clusters_ward_D2, data = merged_data)
-ggsurvplot(ward_d2,
+ward_d2_DSS <- surv_fit(surv_obj_ward_DSS ~ clusters_ward_D2, data = merged_data)
+ward_d2_DSS_plot <- ggsurvplot(ward_d2_DSS,
            data = merged_data,
            pval = TRUE,
            conf.int = TRUE,
-           title = "Disease Specific Survival for Identified Ward.D1 Hierarchical Cluster",
+           title = "Disease Specific Survival for Identified Ward.D2 Hierarchical Cluster",
            xlab = "Time (Months)",
            ylab = "Survival Probability",
            ggtheme = theme_minimal(base_size = 14))
+#Plot
+ward_d1_DSS_plot
+ward_d2_DSS_plot
+
+
+# Overall survival 
+surv_obj_ward_OS <- Surv(time = merged_data$OS_MONTHS, event=merged_data$OS_STATUS)
+
+# KM plot for ward_D1 clustering
+ward_d1_OS <- surv_fit(surv_obj_ward_OS ~ clusters_ward_D1, data = merged_data)
+ward_d1_OS_plot <- ggsurvplot(ward_d1_OS,
+           data = merged_data,
+           pval = TRUE,
+           conf.int = TRUE,
+           title = "Overall Survival for Identified Ward.D1 Hierarchical Cluster",
+           xlab = "Time (Months)",
+           ylab = "Survival Probability",
+           ggtheme = theme_minimal(base_size = 14))
+
+# KM plot for ward_D2 clustering
+ward_d2_OS <- surv_fit(surv_obj_ward_OS ~ clusters_ward_D2, data = merged_data)
+ward_d2_OS_plot <- ggsurvplot(ward_d2_OS,
+           data = merged_data,
+           pval = TRUE,
+           conf.int = TRUE,
+           title = "Overall Survival for Identified Ward.D2 Hierarchical Cluster",
+           xlab = "Time (Months)",
+           ylab = "Survival Probability",
+           ggtheme = theme_minimal(base_size = 14))
+
+# Plot the plots
+ward_d1_OS_plot
+ward_d2_OS_plot
+
+# Save the plots
+ggsave("DSSHierarchicalClusteringWardD.png", ward_d1_DSS_plot$plot, width=7, height=3, dpi=300)
+ggsave("DSSHierarchicalClusteringWardD2.png", ward_d2_DSS_plot$plot, width=7, height=3, dpi=300)
+ggsave("OSHierarchicalClusteringWardD.png", ward_d1_OS_plot$plot, width=7, height=3, dpi=300)
+ggsave("OSHierarchicalClusteringWardD2.png", ward_d2_OS_plot$plot, width=7, height=3, dpi=300)
 ```
 
 **Observations:**
@@ -720,23 +671,90 @@ ggsurvplot(ward_d2,
 # Test age differences across clusters
 ```{r inv5_anova}
 # One-way ANOVA for age
-# [INSERT CODE HERE]
+merged_data$clusters_ward_D1 <- as.factor(merged_data$clusters_ward_D1)
+merged_data$clusters_ward_D2 <- as.factor(merged_data$clusters_ward_D2)
 
-# Post-hoc tests if significant
-# [INSERT CODE HERE]
+anova_result_Ward_D1 <- aov(merged_data$AGE ~ clusters_ward_D1, data = merged_data)
+summary(anova_result_Ward_D1)
 
-# Visualization
-# [INSERT CODE HERE]
+anova_result_Ward_D2 <- aov(merged_data$AGE ~ clusters_ward_D2, data = merged_data)
+summary(anova_result_Ward_D2)
+
+TukeyHSD(anova_result_Ward_D1)
+TukeyHSD(anova_result_Ward_D2)
+
+# Plot the Anova test results
+anova_ward_d1_plot <- ggplot(merged_data, aes(x = clusters_ward_D1, y = AGE, fill = clusters_ward_D1)) +
+  geom_boxplot() +
+  labs(
+    title = "Patient Age Distribution Across Ward.D1 Clusters",
+    x = "Cluster",
+    y = "Age (years)"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(legend.position = "none")
+
+anova_ward_d2_plot <- ggplot(merged_data, aes(x = clusters_ward_D2, y = AGE, fill = clusters_ward_D2)) +
+  geom_boxplot() +
+  labs(
+    title = "Patient Age Distribution Across Ward.D2 Clusters",
+    x = "Cluster",
+    y = "Age (years)"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(legend.position = "none")
+
+
+# Plot
+anova_ward_d1_plot
+anova_ward_d2_plot
+
+# Save
+ggsave("AgeDistributionAcrossClusters_WardD1.png", anova_ward_d1_plot, width=7, height=3, dpi=300)
+ggsave("AgeDistributionAcrossClusters_WardD2.png", anova_ward_d2_plot, width=7, height=3, dpi=300)
 ```
 
 ## 3.3.4 Chi-Square Tests for Categorical Variables
 # Test categorical variable differences
 ```{r inv5_chisq}
-# Tumor stage, sex, ethnicity, etc.
-# [INSERT CODE HERE]
+# Tumor stage
+merged_data$AJCC_PATHOLOGIC_TUMOR_STAGE <- as.factor(merged_data$AJCC_PATHOLOGIC_TUMOR_STAGE)
 
-# Contingency tables and visualizations
-# [INSERT CODE HERE]
+# Contingency table
+table_stage_cluster_wardd1 <- table(merged_data$clusters_ward_D1, merged_data$AJCC_PATHOLOGIC_TUMOR_STAGE)
+table_stage_cluster_wardd1
+table_stage_cluster_wardd2 <- table(merged_data$clusters_ward_D2, merged_data$AJCC_PATHOLOGIC_TUMOR_STAGE)
+table_stage_cluster_wardd2
+
+# Chi-square Test
+chisq_test_wardd1 <- chisq.test(table_stage_cluster_wardd1)
+chisq_test_wardd1
+chisq_test_wardd2 <- chisq.test(table_stage_cluster_wardd2)
+chisq_test_wardd2
+
+# Visualization
+chi_test_plot_ward1 <- ggplot(merged_data, aes(x = clusters_ward_D1, fill = AJCC_PATHOLOGIC_TUMOR_STAGE)) +
+  geom_bar(position = "fill") +  # fill = proportion per cluster
+  ylab("Proportion") +
+  xlab("Cluster") +
+  labs(title = "Distribution of Tumor Stage Across Ward.D1 Clusters") +
+  theme_minimal(base_size = 14)
+
+chi_test_plot_ward2 <- ggplot(merged_data, aes(x = clusters_ward_D2, fill = AJCC_PATHOLOGIC_TUMOR_STAGE)) +
+  geom_bar(position = "fill") +  # fill = proportion per cluster
+  ylab("Proportion") +
+  xlab("Cluster") +
+  labs(title = "Distribution of Tumor Stage Across Ward.D2 Clusters") +
+  theme_minimal(base_size = 14)
+
+#plot
+chi_test_plot_ward1
+chi_test_plot_ward2
+
+
+#save
+ggsave("TumorStageAcrossClusters_WardD1.png",chi_test_plot_ward1 , width=4, height=4, dpi=300)
+ggsave("TumorStageAcrossClusters_WardD2.png",chi_test_plot_ward2 , width=4, height=4, dpi=300)
 ```
 
 
@@ -1158,6 +1176,9 @@ The analysis reveals several key findings about gene mutations and disease-speci
 ## 3.28 ALTERNATIVE ANALYSIS: Synonymous vs Non-Synonymous Mutations
 # Compare survival outcomes by mutation type
 ```{r inv7_mutation_type}
+
+#I'm not sure if this section makes sense. I don't know if I did the analysis right here. Another set of eyes would be great here. 
+
 synonymous_types <- c("Silent")
 
 non_synonymous_types <- c(
@@ -1341,14 +1362,6 @@ if (nrow(mutation_type_results) == 0) {
   }
 }
 
-```
-```{r}
-#Extracted table of just top 5 genes to save space:
-top5 <- survival_results %>%
-  arrange(PValue) %>%
-  head(5)
-
-print(top5)
 ```
 
 =======
