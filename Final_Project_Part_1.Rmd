@@ -331,6 +331,103 @@ ggsurvplot(fit_dfs,
            ylab = "Survival Probability",
            ggtheme = theme_minimal(base_size = 14))
 ```
+```{r}
+# All in one Plot
+library(survival)
+library(survminer)
+library(ggpubr)
+
+## ---- OS ----
+surv_os <- Surv(time = data_clinical_patient$OS_MONTHS, 
+                event = 1 - data_clinical_patient$OS_STATUS)
+
+fit_os <- survfit(surv_os ~ 1)
+
+p_os <- ggsurvplot(
+  fit_os,
+  data = data_clinical_patient,
+  risk.table = TRUE,
+  conf.int = TRUE,
+  palette = "Dark2",
+  title = "Overall Survival",
+  xlab = "Time (Months)",
+  ylab = "Survival Probability",
+  ggtheme = theme_minimal(base_size = 14)
+)
+
+
+## ---- DSS ----
+surv_dss <- Surv(time = data_clinical_patient$DSS_MONTHS, 
+                 event = 1 - data_clinical_patient$DSS_STATUS)
+
+fit_dss <- survfit(surv_dss ~ 1)
+
+p_dss <- ggsurvplot(
+  fit_dss,
+  data = data_clinical_patient,
+  risk.table = TRUE,
+  conf.int = TRUE,
+  palette = "Dark2",
+  title = "Disease-Specific Survival",
+  xlab = "Time (Months)",
+  ylab = "Survival Probability",
+  ggtheme = theme_minimal(base_size = 14)
+)
+
+
+## ---- PFS ----
+surv_pfs <- Surv(time = data_clinical_patient$PFS_MONTHS, 
+                 event = 1 - data_clinical_patient$PFS_STATUS)
+
+fit_pfs <- survfit(surv_pfs ~ 1)
+
+p_pfs <- ggsurvplot(
+  fit_pfs,
+  data = data_clinical_patient,
+  risk.table = TRUE,
+  conf.int = TRUE,
+  palette = "Dark2",
+  title = "Progression-Free Survival",
+  xlab = "Time (Months)",
+  ylab = "Survival Probability",
+  ggtheme = theme_minimal(base_size = 14)
+)
+
+
+## ---- DFS ----
+surv_dfs <- Surv(time = data_clinical_patient$DFS_MONTHS, 
+                 event = 1 - data_clinical_patient$DFS_STATUS)
+
+fit_dfs <- survfit(surv_dfs ~ 1)
+
+p_dfs <- ggsurvplot(
+  fit_dfs,
+  data = data_clinical_patient,
+  risk.table = TRUE,
+  conf.int = TRUE,
+  palette = "Dark2",
+  title = "Disease-Free Survival",
+  xlab = "Time (Months)",
+  ylab = "Survival Probability",
+  ggtheme = theme_minimal(base_size = 14)
+)
+
+ggsurvplot_arrange(
+  list(p_os, p_dss, p_pfs, p_dfs),
+  ncol = 2,
+  nrow = 2
+)
+
+ggarrange(
+  p_os$plot,
+  p_dss$plot,
+  p_pfs$plot,
+  p_dfs$plot,
+  ncol = 2,
+  nrow = 2
+)
+
+```
 
 What did we notice?
 
